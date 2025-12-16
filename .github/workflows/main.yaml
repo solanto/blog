@@ -41,8 +41,11 @@ jobs:
       - name: 🔺 pull vercel environment information
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
 
-      - name: 🔺 build & deploy to vercel
-        run: vercel --token=${{ secrets.VERCEL_TOKEN }}
+      - name: ⚙️ build
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: 🔺 deploy to vercel
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
