@@ -3,7 +3,7 @@ name: build & deploy to vercel
 on:
   push:
     branches:
-      - master
+      - main
 
 env:
   PRODUCTION: true
