@@ -46,3 +46,4 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          FLICKR_API_KEY: ${{ secrets.FLICKR_API_KEY }}
