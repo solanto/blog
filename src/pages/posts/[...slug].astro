@@ -1,0 +1,55 @@
+---
+import { getCollection, render } from "astro:content"
+import slug from "slug"
+// @ts-ignore
+import intersperse from "intersperse"
+import Page from "../../layouts/Page.astro"
+import PostData from "../../components/PostData.astro"
+import formatDate from "../../../lib/format-date"
+import type { GetStaticPaths } from "astro"
+import smartypants from "smartypants"
+import type { Post } from "../../content.config"
+import Photo from "../../components/Photo.astro"
+import CodeBlock from "../../components/CodeBlock.astro"
+
+export const getStaticPaths: GetStaticPaths = async () =>
+	(await getCollection("posts")).map(post => ({
+		params: { slug: post.id },
+		props: { post }
+	}))
+
+interface Props {
+	post: Post
+}
+
+const { post } = Astro.props
+const { tags, date, updated } = post.data
+const { Content } = await render(post)
+---
+
+<Page title={smartypants(post.data.title)}>
+	<aside class="metadata">
+		<details>
+			<summary
+				>{formatDate(updated ?? date)}{tags?.length ? ";" : null}
+				{
+					tags ?
+						intersperse(
+							tags.map(tag => (
+								<a
+									href={`/tags/${slug(tag)}`}
+									set:html={smartypants(tag)}
+								/>
+							)),
+							", "
+						)
+					:	null
+				}</summary
+			>
+			<PostData {post} />
+		</details>
+	</aside>
+	<main>
+		<Content components={{ img: Photo, pre: CodeBlock }} />
+	</main>
+</Page>

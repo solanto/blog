@@ -1,0 +1,42 @@
+---
+import Writing from "../../layouts/Writing.astro"
+import formatDate from "../../../lib/format-date"
+
+import getTags from "../../../lib/get-tags"
+
+const tags = await getTags()
+---
+
+<Writing title="tags">
+	<h1>tags</h1>
+	<table>
+		<thead>
+			<tr>
+				<th>tag</th>
+				<th class="numeric"># of posts</th>
+				<th class="numeric">last updated</th>
+			</tr>
+		</thead>
+		<tbody>
+			{
+				Object.entries(tags)
+					.toSorted()
+					.map(([tagName, { id, posts, lastUpdated }]) => (
+						<tr>
+							<th>
+								<a href={`/tags/${id}`}>{tagName}</a>
+							</th>
+							<td class="numeric">{posts.length}</td>
+							<td class="numeric">
+								{lastUpdated ?
+									<date datetime={formatDate(lastUpdated)}>
+										{formatDate(lastUpdated)}
+									</date>
+								:	"–"}
+							</td>
+						</tr>
+					))
+			}
+		</tbody>
+	</table>
+</Writing>

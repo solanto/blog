@@ -1,11 +1,19 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+// TODO: paginate post list
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import Writing from "../layouts/Writing.astro"
+import Content from "../content/home.mdx"
+import PostList from "../components/PostList.astro"
+import { getCollection } from "astro:content"
+
+const posts = await getCollection("posts")
 ---
 
-<Layout>
-	<Welcome />
-</Layout>
+<Writing title="home">
+	<h1>home</h1>
+	<Content />
+	<section>
+		<h2>writing</h2>
+		<PostList {posts} heading="h3" />
+	</section>
+</Writing>

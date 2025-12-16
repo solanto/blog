@@ -1,0 +1,47 @@
+---
+import formatDate from "../../lib/format-date"
+import slug from "slug"
+import type { Post } from "../content.config"
+import type { Props as UnknownProps } from "astro"
+import smartypants from "smartypants"
+
+interface Props extends UnknownProps {
+	post: Post
+	"without-tag"?: string
+}
+
+const { post, "without-tag": withoutTag, ...props } = Astro.props
+const {
+	data: { date, updated, tags }
+} = post
+
+const filteredTags = withoutTag ? tags?.filter(tag => tag != withoutTag) : tags
+---
+
+<dl {...props}>
+	<dt>posted</dt>
+	<dd>{formatDate(date)}</dd>
+	{
+		updated ?
+			<>
+				<dt>updated</dt>
+				<dd>{formatDate(updated)}</dd>
+			</>
+		:	null
+	}
+	{
+		filteredTags?.length ?
+			<>
+				<dt>{withoutTag ? "other tags" : "tags"}</dt>
+				{filteredTags.toSorted().map(tag => (
+					<dd>
+						<a
+							href={`/tags/${slug(tag)}`}
+							set:html={smartypants(tag)}
+						/>
+					</dd>
+				))}
+			</>
+		:	null
+	}
+</dl>

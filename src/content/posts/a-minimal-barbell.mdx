@@ -1,0 +1,190 @@
+---
+title: combinatorial optimization for a minimal barbell
+date: 2025-08-03T19:51:54-04:00
+tags:
+    - math
+---
+
+# combinatorial optimization for a minimal barbell
+
+On barbell movements, the workout tracker app [Hevy](https://www.hevyapp.com/) offers its *plate calculator*­—a tool that, when given the total weight you'd like to lift, tells you which weighted plates to load the bar with. Having learned the hard way that math gets difficult when you're winded, I now use this feature extensively.
+
+One day: I sat on the incline bench and noticed that I'd disabled the calculator's options for thirty-five and forty-five-pound plates.
+
+> No use in more trips to the weight rack; let's turn these back on so I'm not running around with tons of smaller weights.
+
+I reselected thirty-five, forty-five, and—
+
+> Wait a second.
+
+Without touching the total weight setting, enabling thirty-fives _increased_ the number of plates Hevy wanted me to use, from three to four. Then, enabling forty-fives brought the number of plates back down to three.
+
+> I know what's happening.
+
+![hello](../../assets/posts/a-minimal-barbell/plates.jpeg)
+
+## the change-making problem
+
+Let's state the problem Hevy's plate calculator aims to solve:
+
+> I need a certain, total amount of weight. What plates should I use to total that weight while lugging around the fewest plates possible?
+
+This is known more generally in math as the [_change-making problem_](https://en.wikipedia.org/wiki/Change-making_problem). It's typically framed as follows:
+
+> My customer needs a certain, total amount of change. What coins should I give them to total that amount while handing out the fewest coins possible?
+
+With some math trickery, this can be shown to be a special case of the [_knapsack problem_](https://en.wikipedia.org/wiki/Knapsack_problem)—a problem computer scientists have known to be computationally difficult [for decades](https://en.wikipedia.org/wiki/Karp%27s_21_NP-complete_problems) (with study on the problem extending back [on the order of centuries](https://doi.org/10.1112/plms/s1-28.1.486)).
+
+## the greedy approach
+
+Intuitively, we might go about solving the change-making problem by first selecting the largest weight under our target, then the largest weight under the remainder, and so on. We try to get as close as possible to the goal per step we take toward it—and this is a reasonable approach! Here, we use a [_greedy_](https://en.wikipedia.org/wiki/Greedy_algorithm) [heuristic](<https://en.wikipedia.org/wiki/Heuristic_(computer_science)>). Hevy uses this particular heuristic approach in its plate calculator.
+
+With 25s, 10s, 5s, and 2.5s:
+
+1. $52.5 - \mathbf{25} = 27.5$;
+2. $27.5 - \mathbf{25} = 2.5$;
+3. 25, 10, and 5 are too large, so try 2.5;
+4. $2.5 - \mathbf{2.5} = 0$.
+
+We use three plates: two twenty-fives and a 2.5.
+
+Adding 35s:
+
+1. $52.5 - \mathbf{35} = 17.5$;
+2. 35 and 25 are too large; try 10;
+3. $17.5 - \mathbf{10} = 7.5$;
+4. 10 is too large; try 5;
+5. $7.5 - \mathbf{5} = 2.5$;
+6. 5 is too large; try 2.5;
+7. $2.5 - \mathbf{2.5} = 0$.
+
+Now, we use four plates: a thirty-five, a ten, a five, and a 2.5—despite our previous, better solution still being feasible.
+
+Greedy algorithms work great in many cases. For the change-making problem, with the right set of coins (in most real-world currency systems, in fact), [they can even be optimal](https://doi.org/10.1016/j.orl.2004.06.001)! In this case, though, a greedy algorithm isn't perfect.
+
+## exact approaches
+
+If a greedy approach isn't optimal given our specific constraints, we can try algorithms proven to be optimal in general.
+
+### complexity woes
+
+Recall that this problem is known in computer science as "computationally difficult;" it is in fact [weakly NP-hard](https://en.wikipedia.org/wiki/Weak_NP-completeness). As the number of inputs (coin, or plate, demoninations) increases, the time required to compute the optimal solution grows quickly.
+
+But computational complexity doesn't give the final say as to whether a problem is worth solving in practice. Lots of day-to-day software searches through strings of text using the power of [regular expressions](https://en.wikipedia.org/wiki/Regular_expression)—and that problem is NP-[_complete_](https://en.wikipedia.org/wiki/NP-completeness)! We're working with a small number of inputs (and the change-making problem has a [pseudopolynomial-time](https://en.wikipedia.org/wiki/Pseudo-polynomial_time) algorithm, anyway), so the problem's [asymptotic](https://en.wikipedia.org/wiki/Asymptotic_computational_complexity) complexity is of little consequence.
+
+### a dynamic programming algorithm
+
+There are many good ways to model and solve the change-making problem. Though I'm partial to [integer programming](https://en.wikipedia.org/wiki/Integer_programming) and [network modeling](https://en.wikipedia.org/wiki/Graph_theory), a good ol' [dynamic program](https://en.wikipedia.org/wiki/Dynamic_programming) gets the job done well and would be the best choice for integration into an app like Hevy.
+
+To give an example, I've implemented [Wright (1975)](https://doi.org/10.1145/321864.321874)’s algorithm in TypeScript using [Wikipedia's Python implementation](https://en.wikipedia.org/wiki/Change-making_problem#Implementation) as a guide.
+
+```typescript
+function change(coins: number[], total: number): number[] | undefined {
+	// this algorithm only works with integers
+	if (!(Number.isInteger(total) && coins.every(Number.isInteger)))
+		throw new TypeError("Inputs must be integral.")
+
+	// phase 1
+	// solve the problem
+
+	// construct a matrix to keep track of all subproblems' solutions
+	const solutions = Array.from({ length: coins.length + 1 }, (_, coin) =>
+		Array.from({ length: total + 1 }, (_, sum) =>
+			// consider nontrivial solutions infeasible (∞ coins) until proven o/w
+			coin == 0 && sum > 0 ? Infinity : 0
+		)
+	)
+
+	// fill in the matrix, from 1 to `total`
+	for (const [coin, value] of coins.entries())
+		for (let sum = 1; sum <= total; sum++)
+			if (value == sum) solutions[coin + 1][sum] = 1
+			else if (value > sum)
+				solutions[coin + 1][sum] = solutions[coin][sum]
+			else
+				solutions[coin + 1][sum] = Math.min(
+					solutions[coin][sum],
+					1 + solutions[coin + 1][sum - value]
+				)
+
+	// phase 2
+	// retrace our steps to figure out which coins resulted in our optimum
+
+	const optimizer: number[] = []
+
+	// start at the far corner of the matrix, where we reached our optimum
+	let coin = coins.length
+	let sum = total
+
+	// walk back along our solution path & record coins used
+	while (sum > 0 && coin > 0)
+		if (solutions[coin][sum] == solutions[coin - 1][sum]) coin--
+		else {
+			optimizer.push(coins[coin - 1])
+			sum -= coins[coin - 1]
+		}
+
+	// for our purposes: only consider exact solutions
+	if (optimizer.reduce((a, b) => a + b, 0) == total) return optimizer
+}
+```
+
+### demo
+
+This demo runs that exact TypeScript code ([transpiled](https://en.wikipedia.org/wiki/Source-to-source_compiler) to nearly-identical JavaScript) in your browser, alongside a little UI I slapped together to convey info similar to Hevy's plate calculator dialog. Try enabling thirty-fives, and then forty-fives; gaze in awe as the optimal solution stays put as it ought to. Assuming you're not viewing this on a toaster: you'll notice that calculations are instant, computational complexity nonwithstanding!
+
+![](https://codepen.io/atsolanto/pen/xbwdNwQ)
+
+## beyond workout trackers: the subset sum problem
+
+You may have noticed that, in approaching the problem of selecting plates, a limit on the number of plates was never mentioned. This is largely because Hevy's plate calculator makes the same assumption made in the classical change-making problem: each available denomination is in infinite supply. Practically, this doesn't present issues to users; the number of plates available is rarely a limiting factor.
+
+If we really wanted to impose this constraint, this would lead us to consider the [subset sum problem](https://en.wikipedia.org/wiki/Subset_sum_problem). Though also a knapsack problem, algorithms for this problem tend to be more complex (see [Pisinger, 1999](https://doi.org/10.1006/jagm.1999.1034)) and are still under more intensive research (see [Polak, Rohwedder, & Węgrzycki, 2021](https://doi.org/10.48550/arXiv.2105.04035)). And none of this yet involves the fact that a finding **minimal** summing subset is even more difficult.
+
+## postscript: are you a friend of julia? ∴
+
+I originally implemented Wright's change-making algorithm in Julia, my ~~beloved~~ preferred language for [scientific computing](https://en.wikipedia.org/wiki/Computational_science). Here's that (messier) code, which helped me get an initial grasp of this algorithm's inner workings.
+
+```julia
+import Base: +, -
+
+struct Infinity end
+
+const ∞ = Infinity()
+
+Base.isless(::Any, ::Infinity) = true
+Base.isless(::Infinity, ::Any) = false
+Base.isless(::Infinity, ::Infinity) = false
+(+)(::Infinity, ::Any) = ∞
+(+)(::Any, ::Infinity) = ∞
+(-)(::Infinity, ::Any) = ∞
+
+function change(coins, n)
+	M = Union{Int,Infinity}[
+		i == 1 && r > 1 ? ∞ : 0 for i in 1:(length(coins) + 1), r in 1:(n + 1)
+	]
+
+	for (i, coin) in enumerate(coins)
+		for r in 2:(n + 1)
+			if coin == r - 1 M[i + 1, r] = 1
+			elseif coin > r - 1 M[i + 1, r] = M[i, r]
+			else M[i + 1, r] = min(M[i, r], 1 + M[i + 1, r - coin]) end
+		end
+	end
+
+	solution = Int[]
+	c = length(coins) + 1
+	r = n + 1
+
+	while r > 1 && c > 1
+		if M[c, r] == M[c - 1, r]
+			c -= 1
+		else
+			push!(solution, coins[c - 1])
+			r -= coins[c - 1]
+		end
+	end
+
+	sum(solution) == n ? solution : nothing
+end
+```

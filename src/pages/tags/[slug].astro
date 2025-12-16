@@ -1,0 +1,25 @@
+---
+import PostList from "../../components/PostList.astro"
+import Writing from "../../layouts/Writing.astro"
+import getTags from "../../../lib/get-tags"
+
+export async function getStaticPaths() {
+	return Object.entries(await getTags()).map(([tagName, tag]) => ({
+		params: { slug: tag.id },
+		props: { tagName, tag }
+	}))
+}
+
+const {
+	tagName,
+	tag: { posts }
+} = Astro.props
+---
+
+<Writing title={`tags # ${tagName}`}>
+	<hgroup>
+		<p>tag</p>
+		<h1>{tagName}</h1>
+	</hgroup>
+	<PostList {posts} heading="h2" without-tag={tagName} />
+</Writing>

@@ -1,0 +1,52 @@
+---
+import Writing from "../layouts/Writing.astro"
+---
+
+<Writing title="tags">
+	<h1>error 404</h1>
+	<p>You've navigated to an address that doesn’t exist!</p>
+	<p>
+		Try going <span id="back">back</span> or to this site’s <a href="/"
+			>homepage</a
+		>.
+	</p>
+</Writing>
+
+<script>
+	const backSpan = document.getElementById("back")!
+
+	const backLink = document.createElement("button")
+
+	backLink.innerText = backSpan.innerText
+	backLink.addEventListener("click", () => window.history.back())
+	backLink.classList.add("back-link")
+	backLink.setAttribute("tabindex", "0")
+
+	backSpan.replaceWith(backLink)
+</script>
+
+<style is:global>
+	main h1 {
+		background-color: var(--color__alt--dark);
+		rotate: 0deg;
+		color: var(--color__alt--light);
+		font-family: var(--font__alt);
+
+		&::before,
+		&::after {
+			display: none;
+		}
+	}
+
+	.back-link {
+		cursor: pointer;
+		text-decoration: underline;
+		text-decoration-color: var(--color__alt--dark);
+		font-family: inherit;
+		font-size: inherit;
+		background-color: transparent;
+		border: none;
+		color: inherit;
+		padding: 0;
+	}
+</style>

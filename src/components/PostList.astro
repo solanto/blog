@@ -1,0 +1,169 @@
+---
+import type { Post } from "../content.config"
+import type Component from "../../lib/component"
+import PostData from "./PostData.astro"
+import smartypants from "smartypants"
+
+interface Props {
+	posts: Post[]
+	heading: Component
+	"without-tag"?: string
+}
+
+const { posts, heading: Heading, "without-tag": withoutTag } = Astro.props
+---
+
+{
+	posts
+		.sort((a, b) =>
+			(a.data.updated ?? a.data.date) < (b.data.updated ?? b.data.date) ?
+				1
+			:	-1
+		)
+		.map(post => {
+			const {
+				id,
+				data: { title, date, updated, tags }
+			} = post
+
+			return (
+				<article class="post-listing">
+					<Heading>
+						<a
+							href={`/posts/${id}`}
+							set:html={smartypants(title)}
+						/>
+					</Heading>
+					<PostData {post} without-tag={withoutTag} />
+				</article>
+			)
+		})
+}
+
+<style>
+	.post-listing {
+		margin-bottom: 2rem;
+		--decoration-width: 1.5rem;
+
+		> *:first-child {
+			--margin: 0.5rem;
+			margin-left: calc(var(--decoration-width) + var(--margin));
+			position: relative;
+			margin-bottom: 0.5ex;
+			min-height: var(--decoration-width);
+			vertical-align: middle;
+			display: flex;
+			align-items: center;
+
+			&::before {
+				content: ".";
+				color: transparent;
+				background-color: var(--color__main--dark);
+				position: absolute;
+				left: calc(
+					-1 * var(--decoration-width) - var(--margin) + var(--border-width)
+				);
+				width: var(--decoration-width);
+				height: var(--decoration-width);
+				border-radius: 50%;
+			}
+
+			&::after {
+				content: "*";
+				color: var(--color__main--light);
+				width: var(--decoration-width);
+				height: var(--decoration-width);
+				text-align: center;
+				line-height: var(--decoration-width);
+				position: absolute;
+				left: calc(
+					-1 * var(--decoration-width) - var(--margin) + var(--border-width)
+				);
+				font-weight: 600;
+				font-variation-settings: "SOFT" 100;
+				font-size: calc(var(--decoration-width) * 0.9);
+				margin-top: 0.5ex;
+			}
+		}
+
+		dl {
+			margin-top: 0;
+			background-color: var(--color__alt--light);
+			color: var(--color__alt--dark);
+			font-family: var(--font__alt);
+			padding: 1ch;
+			border: var(--computer-border);
+			margin-left: max(0rem, calc(20% - 10rem));
+			position: relative;
+			margin-left: var(--decoration-width);
+
+			&::before {
+				content: ".";
+				color: transparent;
+				position: absolute;
+				left: calc(-1 * var(--decoration-width));
+				top: calc(-1 * var(--border-width));
+				background-color: var(--color__alt--dark);
+				padding: 1ch;
+				border: var(--computer-border);
+				width: var(--decoration-width);
+				box-sizing: border-box;
+				height: calc(100% + 2 * var(--border-width));
+			}
+
+			&::after {
+				content: ".";
+				color: transparent;
+				position: absolute;
+				left: calc(-1 * var(--decoration-width));
+				top: calc(-1 * var(--border-width));
+				padding: 1ch;
+				border: var(--computer-border);
+				width: var(--decoration-width);
+				box-sizing: border-box;
+				height: var(--decoration-width);
+				background-image: var(--dandelions);
+				background-position: left calc(var(--content-left) - 10rem) top;
+				background-size: auto 100vh;
+				background-attachment: fixed;
+			}
+		}
+
+		dt {
+			font-weight: 300;
+		}
+	}
+
+	.post-listing:nth-child(odd) {
+		dl::after {
+			background-image: var(--clouds);
+		}
+	}
+
+	@media (prefers-contrast: no-preference) and (prefers-reduced-motion: no-preference) {
+		.post-listing > *:first-child {
+			&::before {
+				mask: var(--texture-mask);
+				mask-size: 50rem;
+				mask-position: center center;
+				filter: url(#svgfilter-stamp);
+			}
+
+			&::after {
+				rotate: 10deg;
+			}
+		}
+
+		.post-listing:nth-child(odd) {
+			> *:first-child {
+				&::before {
+					filter: url(#svgfilter-stamp-2);
+				}
+
+				&::after {
+					rotate: -6deg;
+				}
+			}
+		}
+	}
+</style>

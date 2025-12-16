@@ -1,0 +1,13 @@
+- id: home
+  mnemonic: 0
+  href: /
+- id: tags
+  mnemonic: 0
+  href: /tags
+- id: photos
+  mnemonic: 0
+  href: /photography/1
+  match: ^\/photography\/\d*|\/photography$
+- id: now
+  mnemonic: 0
+  href: /now

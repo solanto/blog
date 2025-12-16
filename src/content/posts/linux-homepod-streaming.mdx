@@ -1,0 +1,46 @@
+---
+title: yes, you can stream to homepods from your linux PC
+date: 2025-08-03T19:51:54-04:00
+tags:
+    - linux
+---
+
+# yes, you _can_ stream to homepods from your linux PC
+
+> I had trouble finding proof that PipeWire's built-in RAOP modules work with modern, Apple-branded, AirPlay (version 2) devices like HomePods. Fellow tinkerer: I throw this article out into the void of the internet to say that I see you, and to tell you that you are indeed on the right track.
+
+[![](https://pipewire.org/assets/pipewire.gif)](https://pipewire.org)
+
+## the lowdown
+
+PipeWire has a built-in module that discovers and configures network devices that use the [remote audio output protocol](https://en.wikipedia.org/wiki/Remote_Audio_Output_Protocol) (RAOP)—the protocol that underlies AirPlay. All that remains to do on most Linux installations is to enable it!
+
+Pick your [configuration location](https://docs.pipewire.org/page_man_pipewire_conf_5.html#:~:text=server%20configuration%20file-,SYNOPSIS,-$XDG_CONFIG_HOME/pipewire/pipewire.conf) of choice—`$XDG_CONFIG_HOME/pipewire` per-user, or `/etc/pipewire` or `/usr/share/pipewire` globally—and drop a config file like the following into `pipewire.conf.d`.
+
+```conf
+context.modules = [
+    { name = libpipewire-module-raop-discover
+        condition = [ { module.raop = !false } ]
+    }
+]
+```
+
+Better yet: your installation of PipeWire probably already has a template config file just like this in the `/usr/share/pipewire/pipewire.conf.avail` directory, named something like `50-raop.conf`; copy the file into whichever `pipewire.conf.d` directory you'd like.
+
+## what i learned on the way
+
+### what's pipewire, and why do i keep seeing _pulseaudio_ alongside it?
+
+Along with its own APIs, [PipeWire](https://pipewire.org) implements the most popular audio (and video!) APIs used by Linux software, providing low latency and a sane [interprocess communication](https://en.wikipedia.org/wiki/Inter-process_communication) framework through a unified [multimedia server](https://en.wikipedia.org/wiki/Sound_server). If your distribution uses [GNOME](https://www.gnome.org/) or [Wayland](<https://en.wikipedia.org/wiki/Wayland_(protocol)>) (even on [KDE](https://kde.org/)), you're most likely using PipeWire under the hood nowadays.
+
+The [PulseAudio](https://en.wikipedia.org/wiki/PulseAudio) API and software package were introduced long before PipeWire to abstract Linux's low-level [ALSA](https://en.wikipedia.org/wiki/Advanced_Linux_Sound_Architecture) API and were eventually adopted as standard for consumer audio applications. PipeWire reimplements the popular PulseAudio API—hence common talk of PulseAudio whenever we speak of PipeWire.
+
+### what about pulseaudio's own `module-raop-discover`?
+
+Like PipeWire, PulseAudio has its own module system, which includes a module for RAOP.
+
+This _might_ be a just-as-functional way to go about getting AirPlay working—I'm not sure myself. Instead of figuring out how to work with PipeWire's PulseAudio compatibility layer, I've personally stuck with PipeWire's top-layer module.
+
+## next up
+
+I still need to figure out why my streams always cut out after about a minute. Is it a network issue? A HomeKit config issue? An issue with my HomePod Minis? Side effects of other software config on my PC? Special considerations for OpenSUSE? I have more research to do.

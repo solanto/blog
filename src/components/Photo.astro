@@ -1,0 +1,9 @@
+---
+import { Image } from "astro:assets"
+
+const { class: c, src, alt, ...props } = Astro.props
+---
+
+<figure class:list={["photo", c]} {...props}>
+	<Image src={src} alt={alt} class="copy" inferSize />
+</figure>

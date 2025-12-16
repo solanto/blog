@@ -1,0 +1,187 @@
+---
+import "../styles/main.css"
+import logoSticker from "../assets/logo/sticker.svg"
+import wordmark from "../assets/wordmark.svg"
+import { getCollection } from "astro:content"
+
+interface Props {
+	title?: string
+}
+
+const { title } = Astro.props
+
+const navigation = await getCollection("navigation")
+const prompts = await getCollection("prompts")
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,100..900,0..100,0..1;1,9..144,100..900,0..100,0..1&family=IBM+Plex+Mono:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&family=Noto+Sans+Symbols:wght@100..900&display=swap"
+			rel="stylesheet"
+		/>
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+		/>
+		<link
+			rel="stylesheet"
+			href="https://fonts.googleapis.com/css2?family=Noto+Emoji:wght@300..700&display=block"
+		/>
+		<link rel="stylesheet" href="/styles/shiki.css" />
+		<slot name="head" />
+		<title set:html={`${title ? `${title} @ ` : ""}🌼.🖥️`} />
+	</head>
+
+	<body>
+		<div>
+			<header>
+				<a href="/" class="branding">
+					<img
+						class="logo"
+						src={logoSticker.src}
+						height="80"
+						width="80"
+						alt=""
+					/>
+					<img
+						class="wordmark"
+						loading="eager"
+						alt="dandelion.computer"
+						src={wordmark.src}
+						height="80"
+					/>
+				</a>
+				<nav>
+					<ul>
+						{
+							navigation.map(
+								({ data: { id, href, mnemonic, match } }) => {
+									const before = id.slice(0, mnemonic),
+										highlight = id[mnemonic],
+										after = id.slice(mnemonic + 1)
+
+									// prettier-ignore
+									return (
+								<li>
+									<a {href} class={
+											(match ? (new RegExp(match).test(Astro.url.pathname)) : (Astro.url.pathname == href)) ?
+												"target"
+											: null
+										}>
+										{before}<span class="mnemonic">{highlight}</span>{after}
+									</a>
+								</li>
+							)
+								}
+							)
+						}
+					</ul>
+				</nav>
+			</header>
+			<slot />
+		</div>
+		<footer>
+			<section class="not-by-ai">
+				<a href="https://notbyai.fyi">
+					<img
+						src="/assets/not-by-ai/authored.svg"
+						width="131"
+						height="42"
+						alt="authored by a human, not by AI"
+					/></a
+				>
+				<slot name="not-by-ai" />
+			</section>
+			<section>
+				<a href="/contact.pdf">contact me!</a>
+			</section>
+			<section>
+				<small
+					>built with <a href="https://astro.build">astro</a>
+					{Astro.generator.split(" ")[1]}; see this site's <a
+						href="https://github.com/solanto/site">source</a
+					></small
+				>
+			</section>
+			<section>
+				<aside class="prompt">
+					{
+						prompts[Math.floor(Math.random() * prompts.length)].data
+							.text
+					}
+				</aside>
+				<a href="https://v.gd/66rywq">what's this?</a>
+			</section>
+		</footer>
+		<svg version="1.1" height="0" width="0">
+			<defs>
+				<filter id="svgfilter-stamp">
+					<feTurbulence
+						type="fractalNoise"
+						baseFrequency="0.1"
+						numOctaves="2"></feTurbulence>
+					<feDisplacementMap in="SourceGraphic" scale="7" result="a"
+					></feDisplacementMap>
+					<feTurbulence
+						type="fractalNoise"
+						baseFrequency="0.01"
+						numOctaves="2"
+						seed="1"></feTurbulence>
+					<feDisplacementMap in="a" scale="3"></feDisplacementMap>
+				</filter>
+				<filter id="svgfilter-stamp-2">
+					<feTurbulence
+						type="fractalNoise"
+						baseFrequency="0.13"
+						numOctaves="2"
+						seed="2"></feTurbulence>
+					<feDisplacementMap in="SourceGraphic" scale="12" result="a"
+					></feDisplacementMap>
+					<feTurbulence
+						type="fractalNoise"
+						baseFrequency="0.01"
+						numOctaves="2"></feTurbulence>
+					<feDisplacementMap in="a" scale="3"></feDisplacementMap>
+				</filter>
+				<filter
+					id="svgfilter-outline"
+					x="-100%"
+					y="-100%"
+					width="400%"
+					height="400%"
+					filterUnits="userSpaceOnUse"
+				>
+					<feMorphology
+						operator="dilate"
+						radius="2.5"
+						in="SourceGraphic"
+						result="THICKNESS"></feMorphology>
+					<feComponentTransfer in="THICKNESS" result="BRIGHTNESS">
+						<feFuncR type="discrete" tableValues="1"></feFuncR>
+						<feFuncG type="discrete" tableValues="1"></feFuncG>
+						<feFuncB type="discrete" tableValues="1"></feFuncB>
+					</feComponentTransfer>
+					<feGaussianBlur
+						in="BRIGHTNESS"
+						stdDeviation="1.5"
+						result="blur"></feGaussianBlur>
+					<feColorMatrix
+						in="blur"
+						mode="matrix"
+						values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 5 -2"
+						result="SMOOTHING"></feColorMatrix>
+					<feComposite
+						operator="over"
+						in="SourceGraphic"
+						in2="SMOOTHING"></feComposite>
+				</filter>
+			</defs>
+		</svg>
+		<script src="../scripts/mnemonic-keys.ts"></script>
+	</body>
+</html>

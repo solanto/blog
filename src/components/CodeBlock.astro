@@ -1,0 +1,14 @@
+---
+console.log(Astro.props)
+const { "data-default": d, ...props } = Astro.props
+---
+
+{
+	d ?
+		// prettier-ignore
+		<pre {...props}><slot /></pre>
+		// prettier-ignore
+	:	<figure class="windowed text">
+            <pre {...props}><slot /></pre>
+        </figure>
+}

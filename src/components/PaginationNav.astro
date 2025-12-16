@@ -1,0 +1,41 @@
+---
+interface Props {
+	base: `${string}/`
+	page: number
+	lastPage: number
+}
+
+const { base, page, lastPage } = Astro.props
+---
+
+<nav>
+	<ul>
+		{
+			page > 1 ?
+				<>
+					<li>
+						<a href={base}>first…</a>
+					</li>
+					<li>
+						<a href={`${base}${page - 1}`}>previous</a>
+					</li>
+				</>
+			:	null
+		}
+		<li><span class="target">pg. {page}</span></li>
+		{
+			page < lastPage ?
+				<>
+					<li>
+						<a href={`${base}${page + 1}`}>next</a>
+					</li>
+					<li>
+						<a href={`${base}${lastPage}`}>…last</a>
+					</li>
+				</>
+			:	<li>
+					<span>that’s all :)</span>
+				</li>
+		}
+	</ul>
+</nav>

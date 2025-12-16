@@ -1,0 +1,277 @@
+---
+import type { GetStaticPaths } from "astro"
+
+import PageElement from "../../layouts/Page.astro"
+import { getCollection } from "astro:content"
+import { encode } from "blurhash"
+import { getPixels } from "@unpic/pixels"
+import { blurhashToCssGradientString } from "@unpic/placeholder"
+import type { Photo } from "../../content.config"
+import PaginationNav from "../../components/PaginationNav.astro"
+
+interface Image {
+	url: string
+	width: number
+	height: number
+	background: string
+	id: string
+	title: string
+	description?: string
+}
+
+export const getStaticPaths: GetStaticPaths = async ({ paginate }) => {
+	const pageSize = 10
+
+	const timestamp = (photo: Photo) =>
+		(photo.data.date_taken ?? photo.data.date_last_update!).getTime()
+
+	const images: Image[] = await Promise.all(
+		(await getCollection("photos"))
+			.sort((a, b) => timestamp(b) - timestamp(a))
+			.map(async ({ id, data: { title, description, imageUrls } }) => {
+				const keys = Object.keys(
+					imageUrls
+				) as (keyof typeof imageUrls)[]
+
+				const { url, width, height } =
+					imageUrls["2048px"] ??
+					imageUrls["1024px"] ??
+					imageUrls.original ??
+					imageUrls[keys[keys.length - 1]]!
+
+				const small = await getPixels(
+					(imageUrls["100px"] ?? imageUrls[keys[0]]!).url
+				)
+
+				const background = blurhashToCssGradientString(
+					encode(
+						Uint8ClampedArray.from(small.data),
+						small.width,
+						small.height,
+						4,
+						4
+					)
+				)
+
+				return {
+					url,
+					width,
+					height,
+					background,
+					id,
+					title,
+					description
+				}
+			})
+	)
+
+	return paginate(images, { pageSize, props: { images, pageSize } })
+}
+
+interface Props {
+	images: Image[]
+	pageSize: number
+}
+
+const { images, pageSize } = Astro.props
+const page = Number(Astro.params.page ?? 1)
+
+const start = (page - 1) * pageSize,
+	end = page * pageSize
+
+const lastPage = Math.floor(images.length / pageSize)
+---
+
+<PageElement title={`photography # ${page}`}>
+	<main>
+		<hgroup>
+			<p>pg. {page}</p>
+			<h1>photography</h1>
+		</hgroup>
+		<aside>
+			Feel free follow me via <a href="https://flickr.com/daisygobbler/"
+				>Flickr</a
+			>!
+		</aside>
+		{
+			images
+				.slice(start, end)
+				.map(
+					({
+						url,
+						width,
+						height,
+						background,
+						id,
+						title,
+						description
+					}) => (
+						<article>
+							<figure>
+								<a
+									href={`https://flickr.com/photos/daisygobbler/${id}`}
+								>
+									<img
+										src={url}
+										alt={description ?? ""}
+										width={width}
+										height={height}
+										style={`
+										aspect-ratio: ${width / height};
+										background-image: ${background};
+									`}
+										class={width < height ? "narrow" : null}
+									/>
+								</a>
+								{title ?
+									<figcaption>{title}</figcaption>
+								:	null}
+							</figure>
+						</article>
+					)
+				)
+		}
+	</main>
+	<PaginationNav {...{ lastPage, page }} base="/photography/" />
+
+	<a href="https://notbyai.fyi" slot="not-by-ai">
+		<img
+			src="/assets/not-by-ai/photographed.svg"
+			width="131"
+			height="42"
+			alt="authored by a human, not by AI"
+		/></a
+	>
+</PageElement>
+
+<style>
+	article {
+		counter-increment: photo;
+
+		figure {
+			height: max-content;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			margin: 0 0 2em 0;
+
+			--light-transition: 0.5s cubic-bezier(0.06, 0.4, 0.22, 1);
+			--transform-transition: 0.3s 0.2s cubic-bezier(0.06, 0.4, 0.22, 1);
+			--image-margin: 0.67rem auto;
+
+			a:has(> img),
+			picture {
+				position: relative;
+				display: flex;
+				perspective: 40px;
+				transform-style: preserve-3d;
+				margin: var(--image-margin);
+
+				img {
+					margin: 0;
+				}
+
+				&::after {
+					content: ".";
+					color: transparent;
+					position: absolute;
+					width: 100%;
+					height: 100%;
+					top: 0;
+					left: 0;
+					pointer-events: none;
+					background-image: url("/assets/textures/photo-glare.avif");
+					background-size: 80vmin auto;
+					background-position: top -1vmin right -0.5vmin;
+					background-repeat: no-repeat;
+					mix-blend-mode: screen;
+					opacity: 0;
+					transition:
+						opacity var(--light-transition),
+						transform var(--transform-transition),
+						background-position var(--transform-transition);
+				}
+
+				&:focus-visible,
+				&:hover {
+					z-index: 1;
+
+					img {
+						box-shadow: 0 0.4rem 1rem
+							color-mix(
+								in lab,
+								var(--color__main--dark),
+								transparent 10%
+							);
+						filter: brightness(1.1);
+					}
+
+					&::after {
+						opacity: 1;
+						background-position: top right;
+					}
+
+					img,
+					&::after {
+						transform: translatex(-0.15%) rotatex(0.05deg)
+							rotatey(-0.05deg) rotatez(1deg) scale(1.02);
+					}
+				}
+			}
+
+			img {
+				--border-width: 1rem;
+				object-fit: contain;
+				/* height: auto;
+			max-height: 80vh;
+			width: fit-content; */
+				/* max-width: var(--max-content-width); */
+				width: calc(var(--content-width) - 2 * var(--border-width));
+				height: auto;
+				/* max-height: 80vh; */
+				display: block;
+				border: var(--border-width) solid var(--color__paper);
+				box-shadow: 0 0.1rem 0.5rem
+					color-mix(in lab, var(--color__main--dark), transparent);
+				box-sizing: content-box;
+				transition:
+					box-shadow var(--light-transition),
+					filter var(--light-transition),
+					transform var(--transform-transition);
+				margin: var(--image-margin);
+				color: transparent;
+
+				&.narrow {
+					width: auto;
+					height: 100%;
+					max-width: calc(100% - 2 * var(--border-width));
+					max-height: 80vh;
+				}
+			}
+
+			figcaption {
+				font-family: "IBM Plex Mono";
+				color: var(--color__alt--dark);
+				background-color: var(--color__alt--light);
+				padding: 6em 1ch 0 1ch;
+				z-index: -1;
+				border: var(--computer-border);
+				margin: -6em 0 1ch 0;
+
+				&::after {
+					content: "image " counter(photo);
+					font-weight: 300;
+					display: block;
+					background-color: var(--color__alt--dark);
+					color: var(--color__alt--light);
+					position: relative;
+					padding: 0 1ch;
+					line-height: 3ch;
+					width: 100%;
+					margin: 1ch 0 0 0;
+					left: -1ch;
+				}
+			}
+		}
+	}
+</style>
