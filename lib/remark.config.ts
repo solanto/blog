@@ -493,7 +493,7 @@ const markdown: AstroUserConfig["markdown"] = {
 		remarkDates,
 		remarkSmartypants,
 		// [remarkEmbedder, { transformers: [transformerOembed] }]
-		processor => remarkEmbedder(processor, { transformers: [transformerOembed] })
+		// processor => remarkEmbedder(processor, { transformers: [transformerOembed] })
 	],
 	rehypePlugins: [
 		// rehypeShiki,
