@@ -15,7 +15,7 @@ tags:
 
 PipeWire has a built-in module that discovers and configures network devices that use the [remote audio output protocol](https://en.wikipedia.org/wiki/Remote_Audio_Output_Protocol) (RAOP)—the protocol that underlies AirPlay. All that remains to do on most Linux installations is to enable it!
 
-Pick your [configuration location](https://docs.pipewire.org/page_man_pipewire_conf_5.html#:~:text=server%20configuration%20file-,SYNOPSIS,-$XDG_CONFIG_HOME/pipewire/pipewire.conf) of choice—`$XDG_CONFIG_HOME/pipewire` per-user, or `/etc/pipewire` or `/usr/share/pipewire` globally—and drop a config file like the following into `pipewire.conf.d`.
+Pick your [configuration location](https://docs.pipewire.org/page_man_pipewire_conf_5.html#:~:text=server%20configuration%20file-,SYNOPSIS,-$XDG_CONFIG_HOME/pipewire/pipewire.conf) of choice—`$XDG_CONFIG_HOME` per-user, or `/etc` or `/usr/share` globally—and drop a config file like the following into `pipewire/pipewire.conf.d`.
 
 ```conf
 context.modules = [
@@ -26,6 +26,12 @@ context.modules = [
 ```
 
 Better yet: your installation of PipeWire probably already has a template config file just like this in the `/usr/share/pipewire/pipewire.conf.avail` directory, named something like `50-raop.conf`; copy the file into whichever `pipewire.conf.d` directory you'd like.
+
+Restart PipeWire and its related services to load your new configuration.
+
+```bash
+systemctl --user restart wireplumber pipewire pipewire-pulse
+```
 
 ## what i learned on the way
 

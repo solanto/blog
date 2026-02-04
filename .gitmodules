@@ -1,3 +1,6 @@
 [submodule "lib/sublime-abc"]
 	path = lib/sublime-abc
 	url = https://github.com/jimhawkridge/SublimeABC
+[submodule "lib/mermaid"]
+	path = lib/mermaid
+	url = https://github.com/mermaid-js/mermaid.git

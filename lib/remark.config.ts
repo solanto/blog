@@ -41,6 +41,9 @@ import render from "./music-audio/render"
 import abcGrammarJSON from "./sublime-abc/ABC Notation.JSON-tmLanguage?raw"
 import type * as ABCJS from "abcjs"
 import { type Handler, toHast } from "mdast-util-to-hast"
+// import remarkOembed from "remark-oembed"
+import remarkEmbedder from "@remark-embedder/core"
+import transformerOembed from "@remark-embedder/transformer-oembed"
 
 declare global {
 	interface Window {
@@ -156,119 +159,125 @@ const remarkMusic: Plugin = () => async tree => {
 	return tree
 }
 
-function imageEmbed(
-	node: UnistNode,
-	url: string,
-	width: any,
-	height: any
-): void {
-	const dom = new JSDOM(/*html*/ `
-		<body>
-			<figure id="embed">
-				<img src="${url}" width="${width}" height="${height}">
-				<figcaption>
-					${(node as any).alt} (<a href="${(node as any).url}">view original content</a>)
-				</figcaption>
-			</figure>
-		</body>
-	`)
+// function imageEmbed(
+// 	node: UnistNode,
+// 	url: string,
+// 	width: any,
+// 	height: any
+// ): void {
+// 	const dom = new JSDOM(/*html*/ `
+// 		<body>
+// 			<figure id="embed">
+// 				<img src="${url}" width="${width}" height="${height}" alt="">
+// 				<figcaption>
+// 					${(node as any).alt} (<a href="${(node as any).url}">view original content</a>)
+// 				</figcaption>
+// 			</figure>
+// 		</body>
+// 	`)
 
-	node.type = "element"
-	node.data = {
-		hName: "figure",
-		hProperties: {
-			class: "windowed",
-			style: "--aspect-ratio: auto"
-		},
-		hChildren: fromHtml(
-			dom.window.document.getElementById("embed")!.innerHTML
-		).children
-	}
-	;(node as any).alt = ""
-}
+// 	node.type = "element"
+// 	node.data = {
+// 		hName: "figure",
+// 		hProperties: {
+// 			class: "windowed",
+// 			style: "--aspect-ratio: auto"
+// 		},
+// 		hChildren: fromHtml(
+// 			dom.window.document.getElementById("embed")!.innerHTML
+// 		).children
+// 	}
+// 		; (node as any).alt = ""
+// }
 
-const remarkEmbed: Plugin = () => async tree => {
-	const matches: [node: typeof tree, index: number, parent: typeof tree][] =
-		[]
+// const remarkEmbed: Plugin = () => async tree => {
+// 	const matches: [node: typeof tree, index: number, parent: typeof tree][] =
+// 		[]
 
-	visit(tree, "image", (...args) => matches.push(args))
+// 	visit(tree, "image", (...args) => matches.push(args))
+// 	console.log(matches)
 
-	await Promise.all(
-		matches.map(async ([node]): Promise<void> => {
-			let oembedData: OembedData
+// 	await Promise.all(
+// 		matches.map(async ([node]): Promise<void> => {
+// 			let oembedData: OembedData
 
-			try {
-				oembedData = await fetchOembed((node as any).url)
-			} catch {
-				let openGraphData: Awaited<ReturnType<typeof fetchOpenGraph>>
+// 			try {
+// 				oembedData = await fetchOembed((node as any).url)
+// 			} catch {
+// 				let openGraphData: Awaited<ReturnType<typeof fetchOpenGraph>>
 
-				try {
-					openGraphData = await fetchOpenGraph({
-						url: (node as any).url
-					})
+// 				try {
+// 					openGraphData = await fetchOpenGraph({
+// 						url: (node as any).url
+// 					})
 
-					if (
-						!openGraphData.error &&
-						openGraphData.result.ogImage?.length
-					) {
-						const { url, width, height } =
-							openGraphData.result.ogImage[0]
+// 					if (
+// 						!openGraphData.error &&
+// 						openGraphData.result.ogImage?.length
+// 					) {
+// 						const { url, width, height } =
+// 							openGraphData.result.ogImage[0]
 
-						imageEmbed(node, url, width, height)
-					}
-				} catch {}
+// 						imageEmbed(node, url, width, height)
+// 					}
+// 				} catch {
+// 					imageEmbed(node, (node as any).url, undefined, undefined)
+// 				}
 
-				return
-			}
+// 				return
+// 			}
 
-			// TODO: handle links
-			if (isLink(oembedData)) return
-			else if (isPhoto(oembedData))
-				imageEmbed(
-					node,
-					oembedData.url,
-					oembedData.width,
-					oembedData.height
-				)
-			else {
-				const aspectRatio = oembedData.width / oembedData.height
+// 			console.log("hi")
 
-				const dom = new JSDOM(/*html*/ `
-					<body>
-						<figure id="embed">
-							${oembedData.html}
-							<figcaption>${(node as any).alt}</figcaption>
-						</figure>
-					</body>
-				`)
 
-				const firstChild =
-					dom.window.document.getElementById("embed")!
-						.firstElementChild!
+// 			// TODO: handle links
+// 			if (isLink(oembedData)) return
+// 			else if (isPhoto(oembedData))
+// 				imageEmbed(
+// 					node,
+// 					oembedData.url,
+// 					oembedData.width,
+// 					oembedData.height
+// 				)
+// 			else {
+// 				const aspectRatio = oembedData.width / oembedData.height
 
-				const isBlockquote = firstChild.nodeName == "BLOCKQUOTE"
+// 				const dom = new JSDOM(/*html*/ `
+// 					<body>
+// 						<figure id="embed">
+// 							${oembedData.html}
+// 							<figcaption>${(node as any).alt}</figcaption>
+// 						</figure>
+// 					</body>
+// 				`)
 
-				if (isBlockquote) firstChild.classList.add("pre")
+// 				const firstChild =
+// 					dom.window.document.getElementById("embed")!
+// 						.firstElementChild!
 
-				node.type = "element"
-				node.data = {
-					hName: "figure",
-					hProperties: {
-						class: isBlockquote ? null : "windowed",
-						style: isFinite(aspectRatio)
-							? `--aspect-ratio: ${aspectRatio.toPrecision(4)}`
-							: null
-					},
-					hChildren: fromHtml(
-						dom.window.document.getElementById("embed")!.innerHTML
-					).children
-				}
-			}
-		})
-	)
+// 				const isBlockquote = firstChild.nodeName == "BLOCKQUOTE"
 
-	return tree
-}
+// 				if (isBlockquote) firstChild.classList.add("pre")
+
+// 				node.type = "element"
+// 				node.data = {
+// 					hName: "figure",
+// 					hProperties: {
+// 						class: isBlockquote ? null : "windowed",
+// 						style: isFinite(aspectRatio)
+// 							? `--aspect-ratio: ${aspectRatio.toPrecision(4)}`
+// 							: null
+// 					},
+// 					hChildren: fromHtml(
+// 						dom.window.document.getElementById("embed")!.innerHTML
+// 					).children
+// 				}
+// 			}
+// 		})
+// 	)
+
+// 	return tree
+// }
 
 const inlineMatcher = (leftDelimiter: string, rightDelimiter = leftDelimiter) =>
 	new RegExp(
@@ -278,24 +287,24 @@ const inlineMatcher = (leftDelimiter: string, rightDelimiter = leftDelimiter) =>
 
 const remarkSmall: Plugin =
 	() =>
-	(tree): void =>
-		findAndReplace(tree as Root, [
-			[
-				inlineMatcher("--"),
-				(match: string): Text => {
-					const text = match.slice(2, -2)
+		(tree): void =>
+			findAndReplace(tree as Root, [
+				[
+					inlineMatcher("--"),
+					(match: string): Text => {
+						const text = match.slice(2, -2)
 
-					return {
-						type: "text",
-						value: text,
-						data: {
-							hName: "small",
-							hChildren: [{ type: "text", value: text }]
+						return {
+							type: "text",
+							value: text,
+							data: {
+								hName: "small",
+								hChildren: [{ type: "text", value: text }]
+							}
 						}
 					}
-				}
-			]
-		])
+				]
+			])
 
 const citeNode = (
 	value: string,
@@ -312,81 +321,81 @@ const citeNode = (
 
 const remarkCite: Plugin =
 	() =>
-	(tree): void =>
-		findAndReplace(tree as Root, [
-			[
-				inlineMatcher("\\[\\[", "\\]\\]"),
-				(match: string): Text => citeNode(match.slice(2, -2))
-			],
-			[
-				inlineMatcher("\\[", "\\]"),
-				(match: string): Text =>
-					citeNode("“" + match.slice(1, -1) + "”", {
-						class: "small"
-					})
-			]
-		])
+		(tree): void =>
+			findAndReplace(tree as Root, [
+				[
+					inlineMatcher("\\[\\[", "\\]\\]"),
+					(match: string): Text => citeNode(match.slice(2, -2))
+				],
+				[
+					inlineMatcher("\\[", "\\]"),
+					(match: string): Text =>
+						citeNode("“" + match.slice(1, -1) + "”", {
+							class: "small"
+						})
+				]
+			])
 
 const remarkDetails: Plugin =
 	() =>
-	(tree): void =>
-		findAndReplace(tree as Root, [
-			[
-				inlineMatcher("--"),
-				(match: string): Text => {
-					const text = match.slice(2, -2)
+		(tree): void =>
+			findAndReplace(tree as Root, [
+				[
+					inlineMatcher("--"),
+					(match: string): Text => {
+						const text = match.slice(2, -2)
 
-					return {
-						type: "text",
-						value: text,
-						data: {
-							hName: "small",
-							hChildren: [{ type: "text", value: text }]
+						return {
+							type: "text",
+							value: text,
+							data: {
+								hName: "small",
+								hChildren: [{ type: "text", value: text }]
+							}
 						}
 					}
-				}
-			]
-		])
+				]
+			])
 
 const remarkTaggedEmoji: Plugin =
 	() =>
-	(tree): void =>
-		findAndReplace(tree as Root, [
-			[
-				new RegExp(`(${emojiRegex().toString().slice(1, -2)})+`, "g"),
-				(match: string): Text => ({
-					type: "text",
-					value: match,
-					data: {
-						hName: "span",
-						hProperties: {
-							class: "emoji"
-						},
-						hChildren: [{ type: "text", value: match }]
-					}
-				})
-			]
-		])
+		(tree): void =>
+			findAndReplace(tree as Root, [
+				[
+					new RegExp(`(${emojiRegex().toString().slice(1, -2)})+`, "g"),
+					(match: string): Text => ({
+						type: "text",
+						value: match,
+						data: {
+							hName: "span",
+							hProperties: {
+								class: `emoji${match.matchAll(emojiRegex()).toArray().length > 3 ? " long" : ""}`
+							},
+							hChildren: [{ type: "text", value: match }]
+						}
+					})
+				]
+			])
 
 const remarkDates: Plugin =
 	() =>
-	(tree): void =>
-		findAndReplace(tree as Root, [
-			[
-				/([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]\d|0[1-9]|3[01]))?|W([0-4]\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))([T\s]((([01]\d|2[0-3])((:?)[0-5]\d)?|24\:?00)([\.,]\d+(?!:))?)?(\17[0-5]\d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?)?)?/g,
-				(match: string): Text => ({
-					type: "text",
-					value: match,
-					data: {
-						hName: "time",
-						hProperties: {
-							datetime: match
-						},
-						hChildren: [{ type: "text", value: match }]
-					}
-				})
-			]
-		])
+		(tree): void =>
+			findAndReplace(tree as Root, [
+				[
+					/([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]\d|0[1-9]|3[01]))?|W([0-4]\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))([T\s]((([01]\d|2[0-3])((:?)[0-5]\d)?|24\:?00)([\.,]\d+(?!:))?)?(\17[0-5]\d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?)?)?/g,
+					(match: string): Text => ({
+						type: "text",
+						value: match,
+						data: {
+							hName: "time",
+							hProperties: {
+								datetime: match
+							},
+							hChildren: [{ type: "text", value: match }]
+						}
+					})
+				]
+			])
 
 const variablesTheme = createCssVariablesTheme({
 	name: "css-variables-custom",
@@ -475,21 +484,16 @@ const markdown: AstroUserConfig["markdown"] = {
 		remarkIns,
 		remarkSectionize,
 		remarkDirectiveSugar,
-		// [remarkOembed as Plugin, { syncWidget: true }],
 		remarkMusic,
-		remarkEmbed,
+		// [remarkOembed, { syncWidget: true }],
 		remarkSmall,
 		remarkTaggedEmoji,
 		remarkCite,
 		remarkMath,
 		remarkDates,
-		remarkSmartypants
-		// [
-		// 	remarkEmbedder,
-		// 	{
-		// 		transformers: [oembedTransformer]
-		// 	}
-		// ]
+		remarkSmartypants,
+		// [remarkEmbedder, { transformers: [transformerOembed] }]
+		processor => remarkEmbedder(processor, { transformers: [transformerOembed] })
 	],
 	rehypePlugins: [
 		// rehypeShiki,

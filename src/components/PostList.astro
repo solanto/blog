@@ -61,7 +61,8 @@ const { posts, heading: Heading, "without-tag": withoutTag } = Astro.props
 				background-color: var(--color__main--dark);
 				position: absolute;
 				left: calc(
-					-1 * var(--decoration-width) - var(--margin) + var(--border-width)
+					-1 * var(--decoration-width) - var(--margin) +
+						var(--border-width)
 				);
 				width: var(--decoration-width);
 				height: var(--decoration-width);
@@ -77,7 +78,8 @@ const { posts, heading: Heading, "without-tag": withoutTag } = Astro.props
 				line-height: var(--decoration-width);
 				position: absolute;
 				left: calc(
-					-1 * var(--decoration-width) - var(--margin) + var(--border-width)
+					-1 * var(--decoration-width) - var(--margin) +
+						var(--border-width)
 				);
 				font-weight: 600;
 				font-variation-settings: "SOFT" 100;
@@ -105,7 +107,8 @@ const { posts, heading: Heading, "without-tag": withoutTag } = Astro.props
 				top: calc(-1 * var(--border-width));
 				background-color: var(--color__alt--dark);
 				padding: 1ch;
-				border: var(--computer-border);
+				border-left: var(--computer-border);
+				border-bottom: var(--computer-border);
 				width: var(--decoration-width);
 				box-sizing: border-box;
 				height: calc(100% + 2 * var(--border-width));
@@ -118,7 +121,8 @@ const { posts, heading: Heading, "without-tag": withoutTag } = Astro.props
 				left: calc(-1 * var(--decoration-width));
 				top: calc(-1 * var(--border-width));
 				padding: 1ch;
-				border: var(--computer-border);
+				border-top: var(--computer-border);
+				border-left: var(--computer-border);
 				width: var(--decoration-width);
 				box-sizing: border-box;
 				height: var(--decoration-width);

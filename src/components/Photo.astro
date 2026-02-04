@@ -1,9 +1,11 @@
 ---
 import { Image } from "astro:assets"
+import { markdown } from "@astropub/md"
 
-const { class: c, src, alt, ...props } = Astro.props
+const { class: c, src, alt, title, ...props } = Astro.props
 ---
 
 <figure class:list={["photo", c]} {...props}>
 	<Image src={src} alt={alt} class="copy" inferSize />
+	{ title ? <figcaption>{markdown.inline(title)}</figcaption> : <></> }
 </figure>

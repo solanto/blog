@@ -1,0 +1,78 @@
+---
+title: combinatorially solving "balloon game" in "OFF," zone 2
+date: 2025-12-20T13:39:00-07:00
+tags:
+    - math
+---
+
+# combinatorially solving "balloon game" in *OFF*, zone 2
+
+> I’m the Batter. I’ve been entrusted with a sacred mission.
+
+**A quick spoiler warning**: this article doesn't spoil much story at all, but does reveal the solution to a puzzle.
+
+---
+
+I've been playing—and loving—Fangamer's remaster of *OFF*, by Mortis Ghost. It's a surreal RPG full of twisting story, thought-provoking dialogue, and delightful little puzzles. One puzzle of which is "Balloon Game" at the amusement park in Zone 2, Bismark.
+
+# the rules
+
+You begin with thirteen balloons. 
+
+As explained by the barker:
+
+> When it's your turn, you can choose to pop one, two, or three balloons. When it's my turn, I'll do the same. The one who's left with the last balloon loses the game. [...] I'll start first.
+
+# strategy
+
+This is a classic *subtraction game*—a well-studied game—though I didn't know it while playing.
+
+All I noticed was that, if my turn ever starts with five balloons, my fate is certain. I have three options:
+
+1. I pop one. The barker pops three.
+2. I pop two. The barker pops two.
+3. I pop three. The barker pops one.
+
+I'm left with exactly one balloon no matter what, guaranteeing a loss.
+
+## using a game tree
+
+To get to a win: we could find a progression of the game that forces the barker to start a turn with five balloons and lose. The possible progressions through results of decisions, or states, is easily represented as a graph. This type of graph is in combinatorial game theory as a *game tree*.
+
+### a little tree
+
+Say the barker starts the game by popping two balloons.
+
+```mermaid
+---
+config:
+  layout: elk
+  look: neo
+  theme: forest
+---
+flowchart TB
+    11["11"] -- 1 --> 10(("10"))
+    11 -- 2 --> 9b(("9"))
+    11 -- 3 --> 8b(("8"))
+    10 -- 1 --> 9["9"]
+    10 -- 2 --> 8["8"]
+    10 -- 3 --> 7["7"]
+    9b -- 1 --> 8
+    9b -- 2 --> 7
+    9b -- 3 --> 6["6"]
+    8b -- 1 --> 7
+    8b -- 2 --> 6
+    8b -- 3 --> 5["5"]
+    9 -- 1 --> 8b
+    9 -- 2 --> 7b(("7"))
+    9 -- 3 --> 6b(("6"))
+    8 -- 1 --> 7b
+    8 -- 2 --> 6b
+    8 -- 3 --> 5b(("5"))
+    7 -- 1 --> 6b
+    7 -- 2 --> 5b
+    6 -- 1 --> 5b
+    7b -- 1 --> 6
+    7b -- 2 --> 5
+    6b -- 1 --> 5
+```

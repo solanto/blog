@@ -11,17 +11,15 @@ On barbell movements, the workout tracker app [Hevy](https://www.hevyapp.com/) o
 
 One day: I sat on the incline bench and noticed that I'd disabled the calculator's options for thirty-five and forty-five-pound plates.
 
-> No use in more trips to the weight rack; let's turn these back on so I'm not running around with tons of smaller weights.
+*No use in more trips to the weight rack; let's turn these back on so I'm not running around with tons of smaller weights.*
 
-I reselected thirty-five, forty-five, and—
-
-> Wait a second.
+I reselected thirty-five, forty-five, and—*wait a second.*
 
 Without touching the total weight setting, enabling thirty-fives _increased_ the number of plates Hevy wanted me to use, from three to four. Then, enabling forty-fives brought the number of plates back down to three.
 
-> I know what's happening.
+*I know what's happening.*
 
-![hello](../../assets/posts/a-minimal-barbell/plates.jpeg)
+![](../../assets/posts/a-minimal-barbell/plates.jpeg)
 
 ## the change-making problem
 
@@ -70,7 +68,7 @@ If a greedy approach isn't optimal given our specific constraints, we can try al
 
 Recall that this problem is known in computer science as "computationally difficult;" it is in fact [weakly NP-hard](https://en.wikipedia.org/wiki/Weak_NP-completeness). As the number of inputs (coin, or plate, demoninations) increases, the time required to compute the optimal solution grows quickly.
 
-But computational complexity doesn't give the final say as to whether a problem is worth solving in practice. Lots of day-to-day software searches through strings of text using the power of [regular expressions](https://en.wikipedia.org/wiki/Regular_expression)—and that problem is NP-[_complete_](https://en.wikipedia.org/wiki/NP-completeness)! We're working with a small number of inputs (and the change-making problem has a [pseudopolynomial-time](https://en.wikipedia.org/wiki/Pseudo-polynomial_time) algorithm, anyway), so the problem's [asymptotic](https://en.wikipedia.org/wiki/Asymptotic_computational_complexity) complexity is of little consequence.
+But computational complexity doesn't give the final say as to whether a problem is worth solving in practice. Lots of day-to-day software searches through strings of text using the power of [regular expressions (with backreferences)](https://en.wikipedia.org/wiki/Regular_expression)—and that problem is NP-hard, too! We're working with a small number of inputs (and the change-making problem has a [pseudopolynomial-time](https://en.wikipedia.org/wiki/Pseudo-polynomial_time) algorithm, anyway), so the problem's [asymptotic](https://en.wikipedia.org/wiki/Asymptotic_computational_complexity) complexity is of little consequence.
 
 ### a dynamic programming algorithm
 
@@ -133,7 +131,7 @@ function change(coins: number[], total: number): number[] | undefined {
 
 This demo runs that exact TypeScript code ([transpiled](https://en.wikipedia.org/wiki/Source-to-source_compiler) to nearly-identical JavaScript) in your browser, alongside a little UI I slapped together to convey info similar to Hevy's plate calculator dialog. Try enabling thirty-fives, and then forty-fives; gaze in awe as the optimal solution stays put as it ought to. Assuming you're not viewing this on a toaster: you'll notice that calculations are instant, computational complexity nonwithstanding!
 
-![](https://codepen.io/atsolanto/pen/xbwdNwQ)
+https://codepen.io/atsolanto/pen/xbwdNwQ
 
 ## beyond workout trackers: the subset sum problem
 
