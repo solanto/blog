@@ -501,7 +501,7 @@ const markdown: AstroUserConfig["markdown"] = {
 		rehypeSvgo,
 		rehypeWidont,
 		rehypeSortAttributes,
-		rehypeMermaid
+		// rehypeMermaid
 	],
 	remarkRehype: {
 		handlers: {
