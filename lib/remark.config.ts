@@ -514,8 +514,8 @@ const markdown: AstroUserConfig["markdown"] = {
 		langs: [{ ...JSON.parse(abcGrammarJSON), name: "abc" }],
 		theme: "ayu-dark",
 		transformers: [
-			transformerNotationDiff(),
-			transformerNotationHighlight()
+			// transformerNotationDiff(),
+			// transformerNotationHighlight()
 		]
 	}
 }
