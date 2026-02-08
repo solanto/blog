@@ -36,7 +36,7 @@ jobs:
           cache: pnpm
 
       - name: ➕ install node dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: ➕ install vercel cli
         run: pnpm install --global vercel
