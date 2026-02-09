@@ -71,16 +71,16 @@ const prompts = await getCollection("prompts")
 
 									// prettier-ignore
 									return (
-								<li>
-									<a {href} class={
-											(match ? (new RegExp(match).test(Astro.url.pathname)) : (Astro.url.pathname == href)) ?
-												"target"
-											: null
-										}>
-										{before}<span class="mnemonic">{highlight}</span>{after}
-									</a>
-								</li>
-							)
+										<li>
+											<a {href} class={
+													new RegExp(match!).test(Astro.url.pathname) ?
+														"target"
+													: null
+												}>
+												{before}<span class="mnemonic">{highlight}</span>{after}
+											</a>
+										</li>
+									)
 								}
 							)
 						}

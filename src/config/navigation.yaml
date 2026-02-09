@@ -1,9 +1,11 @@
 - id: home
   mnemonic: 0
   href: /
+  match: ^\/$
 - id: tags
   mnemonic: 0
   href: /tags
+  match: ^\/tags$
 - id: photos
   mnemonic: 0
   href: /photography/1
@@ -11,3 +13,4 @@
 - id: now
   mnemonic: 0
   href: /now
+  match: ^\/now$
