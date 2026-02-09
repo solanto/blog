@@ -73,7 +73,7 @@ const prompts = await getCollection("prompts")
 									return (
 										<li>
 											<a {href} class={
-													new RegExp(match!).test(Astro.url.pathname) ?
+													new RegExp(match!).test(Astro.originPathname) ?
 														"target"
 													: null
 												}>
