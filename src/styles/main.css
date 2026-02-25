@@ -64,6 +64,15 @@
 		border-radius: 50%;
 		padding: 2.5rem 2rem 1.5rem 2rem;
 	} */
+
+	scrollbar-color: var(--color__alt--dark) var(--color__alt--light);
+	scroll-behavior: smooth;
+
+	&::-webkit-scrollbar {
+		width: 16px;
+		height: 16px;
+		background: none;
+	}
 }
 
 body {
@@ -369,6 +378,10 @@ table,
 	background-color: var(--color__alt--light);
 	color: var(--color__alt--dark);
 	font-family: var(--font__alt);
+}
+
+figure:has(>pre) {
+	scrollbar-color: var(--color__alt--light) var(--color__alt--dark);
 }
 
 
