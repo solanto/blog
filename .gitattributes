@@ -1,0 +1,3 @@
+*.mdx linguist-language=md
+src/assets/** -linguist-detectable
+public/assets/** -linguist-detectable
