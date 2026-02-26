@@ -66,7 +66,7 @@ If a greedy approach isn't optimal given our specific constraints, we can try al
 
 ### complexity woes
 
-Recall that this problem is known in computer science as "computationally difficult;" it is in fact [weakly NP-hard](https://en.wikipedia.org/wiki/Weak_NP-completeness). As the number of inputs (coin, or plate, demoninations) increases, the time required to compute the optimal solution grows quickly.
+Recall that this problem is known in computer science as "computationally difficult;" it is in fact [weakly NP-hard](https://en.wikipedia.org/wiki/Weak_NP-completeness). As the number of inputs (coin, or plate, denominations) increases, the time required to compute the optimal solution grows quickly.
 
 But computational complexity doesn't give the final say as to whether a problem is worth solving in practice. Lots of day-to-day software searches through strings of text using the power of [regular expressions (with backreferences)](https://en.wikipedia.org/wiki/Regular_expression)—and that problem is NP-hard, too! We're working with a small number of inputs (and the change-making problem has a [pseudopolynomial-time](https://en.wikipedia.org/wiki/Pseudo-polynomial_time) algorithm, anyway), so the problem's [asymptotic](https://en.wikipedia.org/wiki/Asymptotic_computational_complexity) complexity is of little consequence.
 
