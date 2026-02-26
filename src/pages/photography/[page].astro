@@ -132,7 +132,11 @@ const lastPage = Math.floor(images.length / pageSize)
 				)
 		}
 	</main>
-	<PaginationNav {...{ lastPage, page }} base="/photography/" />
+	<PaginationNav
+		{...{ lastPage, page }}
+		base="/photography/"
+		first="/photography/1"
+	/>
 
 	<a href="https://notbyai.fyi" slot="not-by-ai">
 		<img
