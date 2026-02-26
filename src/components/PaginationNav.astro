@@ -1,11 +1,12 @@
 ---
 interface Props {
+	first?: string
 	base: `${string}/`
 	page: number
 	lastPage: number
 }
 
-const { base, page, lastPage } = Astro.props
+const { first, base, page, lastPage } = Astro.props
 ---
 
 <nav>
@@ -14,7 +15,7 @@ const { base, page, lastPage } = Astro.props
 			page > 1 ?
 				<>
 					<li>
-						<a href={base}>first…</a>
+						<a href={first ?? base}>first…</a>
 					</li>
 					<li>
 						<a href={`${base}${page - 1}`}>previous</a>
