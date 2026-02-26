@@ -1,0 +1,28 @@
+---
+import { DateTime } from "luxon"
+
+interface Props {
+	datetime: DateTime | ConstructorParameters<DateConstructor>[0]
+}
+
+const { datetime: raw } = Astro.props
+
+const datetime = (
+	raw instanceof DateTime ? raw : DateTime.fromJSDate(new Date(raw))).setZone(
+	"America/New_York"
+)
+---
+
+<time
+	datetime={datetime.toFormat("yyyy-MM-dd'T'HH:mmZZ")}
+	set:html={datetime.toFormat(
+		`yyyy-MM-dd'<span class="minor">T</span>'HH:mm'<span class="minor">'Z'</span>'`
+	)}
+/>
+
+<style is:global>
+	time .minor {
+		font-size: 66%;
+		font-weight: 600;
+	}
+</style>
