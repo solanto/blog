@@ -3,6 +3,8 @@ import "../styles/main.css"
 import logoSticker from "../assets/logo/sticker.svg"
 import wordmark from "../assets/wordmark.svg"
 import { getCollection } from "astro:content"
+import { DateTime } from "luxon"
+import Time from "../components/Time.astro"
 
 interface Props {
 	title?: string
@@ -12,6 +14,10 @@ const { title } = Astro.props
 
 const navigation = await getCollection("navigation")
 const prompts = await getCollection("prompts")
+
+const now = DateTime.now()
+	.setZone("America/New_York")
+	.toFormat("yyyy-MM-dd'T'HH:mmZ")
 ---
 
 <!doctype html>
@@ -107,85 +113,93 @@ const prompts = await getCollection("prompts")
 			<section>
 				<small
 					>built with <a href="https://astro.build">astro</a>
-					{Astro.generator.split(" ")[1]}; see this site's <a
-						href="https://github.com/solanto/blog">source</a
-					></small
-				>
+					{Astro.generator.split(" ")[1]} at <Time
+						datetime={Date.now()}
+					>
+						; see this site's <a
+							href="https://github.com/solanto/blog">source</a
+						></Time
+					>
+				</small>
+				<section>
+					<aside class="prompt">
+						{
+							prompts[Math.floor(Math.random() * prompts.length)]
+								.data.text
+						}
+					</aside>
+					<a href="https://v.gd/66rywq">what's this?</a>
+				</section>
 			</section>
-			<section>
-				<aside class="prompt">
-					{
-						prompts[Math.floor(Math.random() * prompts.length)].data
-							.text
-					}
-				</aside>
-				<a href="https://v.gd/66rywq">what's this?</a>
-			</section>
+			<svg version="1.1" height="0" width="0">
+				<defs>
+					<filter id="svgfilter-stamp">
+						<feTurbulence
+							type="fractalNoise"
+							baseFrequency="0.1"
+							numOctaves="2"></feTurbulence>
+						<feDisplacementMap
+							in="SourceGraphic"
+							scale="7"
+							result="a"></feDisplacementMap>
+						<feTurbulence
+							type="fractalNoise"
+							baseFrequency="0.01"
+							numOctaves="2"
+							seed="1"></feTurbulence>
+						<feDisplacementMap in="a" scale="3"></feDisplacementMap>
+					</filter>
+					<filter id="svgfilter-stamp-2">
+						<feTurbulence
+							type="fractalNoise"
+							baseFrequency="0.13"
+							numOctaves="2"
+							seed="2"></feTurbulence>
+						<feDisplacementMap
+							in="SourceGraphic"
+							scale="12"
+							result="a"></feDisplacementMap>
+						<feTurbulence
+							type="fractalNoise"
+							baseFrequency="0.01"
+							numOctaves="2"></feTurbulence>
+						<feDisplacementMap in="a" scale="3"></feDisplacementMap>
+					</filter>
+					<filter
+						id="svgfilter-outline"
+						x="-100%"
+						y="-100%"
+						width="400%"
+						height="400%"
+						filterUnits="userSpaceOnUse"
+					>
+						<feMorphology
+							operator="dilate"
+							radius="2.5"
+							in="SourceGraphic"
+							result="THICKNESS"></feMorphology>
+						<feComponentTransfer in="THICKNESS" result="BRIGHTNESS">
+							<feFuncR type="discrete" tableValues="1"></feFuncR>
+							<feFuncG type="discrete" tableValues="1"></feFuncG>
+							<feFuncB type="discrete" tableValues="1"></feFuncB>
+						</feComponentTransfer>
+						<feGaussianBlur
+							in="BRIGHTNESS"
+							stdDeviation="1.5"
+							result="blur"></feGaussianBlur>
+						<feColorMatrix
+							in="blur"
+							mode="matrix"
+							values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 5 -2"
+							result="SMOOTHING"></feColorMatrix>
+						<feComposite
+							operator="over"
+							in="SourceGraphic"
+							in2="SMOOTHING"></feComposite>
+					</filter>
+				</defs>
+			</svg>
+			<script src="../scripts/mnemonic-keys.ts"></script>
 		</footer>
-		<svg version="1.1" height="0" width="0">
-			<defs>
-				<filter id="svgfilter-stamp">
-					<feTurbulence
-						type="fractalNoise"
-						baseFrequency="0.1"
-						numOctaves="2"></feTurbulence>
-					<feDisplacementMap in="SourceGraphic" scale="7" result="a"
-					></feDisplacementMap>
-					<feTurbulence
-						type="fractalNoise"
-						baseFrequency="0.01"
-						numOctaves="2"
-						seed="1"></feTurbulence>
-					<feDisplacementMap in="a" scale="3"></feDisplacementMap>
-				</filter>
-				<filter id="svgfilter-stamp-2">
-					<feTurbulence
-						type="fractalNoise"
-						baseFrequency="0.13"
-						numOctaves="2"
-						seed="2"></feTurbulence>
-					<feDisplacementMap in="SourceGraphic" scale="12" result="a"
-					></feDisplacementMap>
-					<feTurbulence
-						type="fractalNoise"
-						baseFrequency="0.01"
-						numOctaves="2"></feTurbulence>
-					<feDisplacementMap in="a" scale="3"></feDisplacementMap>
-				</filter>
-				<filter
-					id="svgfilter-outline"
-					x="-100%"
-					y="-100%"
-					width="400%"
-					height="400%"
-					filterUnits="userSpaceOnUse"
-				>
-					<feMorphology
-						operator="dilate"
-						radius="2.5"
-						in="SourceGraphic"
-						result="THICKNESS"></feMorphology>
-					<feComponentTransfer in="THICKNESS" result="BRIGHTNESS">
-						<feFuncR type="discrete" tableValues="1"></feFuncR>
-						<feFuncG type="discrete" tableValues="1"></feFuncG>
-						<feFuncB type="discrete" tableValues="1"></feFuncB>
-					</feComponentTransfer>
-					<feGaussianBlur
-						in="BRIGHTNESS"
-						stdDeviation="1.5"
-						result="blur"></feGaussianBlur>
-					<feColorMatrix
-						in="blur"
-						mode="matrix"
-						values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 5 -2"
-						result="SMOOTHING"></feColorMatrix>
-					<feComposite
-						operator="over"
-						in="SourceGraphic"
-						in2="SMOOTHING"></feComposite>
-				</filter>
-			</defs>
-		</svg>
-		<script src="../scripts/mnemonic-keys.ts"></script>
 	</body>
 </html>
