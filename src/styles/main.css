@@ -509,7 +509,7 @@ iframe {
 main {
 
 	.emoji,
-	&>section>section:last-of-type>p::after {
+	&>section>section:last-child>*:last-child::after {
 		--shadow-blend: 75%;
 		--drop-shadow: 0.06rem 0.06rem 0.01rem color-mix(in oklab,
 				var(--color__main--dark),
@@ -838,12 +838,6 @@ main {
 				margin: 0;
 			}
 		}
-
-		/*         &:has(> * + *) {
-            > *:first-child > * {
-                color: red;
-            }
-        } */
 	}
 
 	figure.photo {
@@ -981,28 +975,10 @@ main {
 
 	}
 
-	&>section>section:last-of-type>p::after {
-		/* content: ".";
-		color: transparent;
-		background-image: linear-gradient(to right in oklch,
-				#ec605d 0%,
-				0%,
-				#ff7550 20%,
-				rgb(97% 92% 0%) 40%,
-				#418447 60%,
-				#121fa3 80%,
-				#7253a4 100%);
-		mix-blend-mode: multiply;
-		filter: blur(0.04em);
-		width: 3em;
-		height: 0.8em;
-		display: inline-block;
-		position: relative;
-		top: 0.24em; */
+	&>section>section:last-child>*:last-child:after {
 		content: "🦋";
 		margin-inline-start: 0.25em;
 	}
-
 }
 
 /* non-ios */
@@ -1010,7 +986,7 @@ main {
 	main {
 
 		.emoji,
-		&>section>section:last-of-type>p::after {
+		&>section>section:last-child>*:last-child::after {
 			--shadow-blend: 50%;
 			filter: url(#svgfilter-outline) drop-shadow(var(--drop-shadow));
 			display: inline-block;
@@ -1093,6 +1069,14 @@ svg.music {
 			&::after {
 				background-image: var(--paper-texture);
 				background-size: 40rem auto;
+			}
+
+			code {
+				color: var(--color__alt--light);
+				background-color: transparent;
+				border: none;
+				z-index: 1;
+				letter-spacing: -0.025em;
 			}
 		}
 
