@@ -1,0 +1,37 @@
+---
+title: "toy software as of late: my LC-3 VM, kladdvara"
+date: 2026-03-06T21:58:00-05:00
+tags:
+    - web dev
+    - rust
+---
+
+# toy software as of late: my LC-3 VM, kladdvara
+
+I was writing the readme for my latest project, looked up "toy software" in a moment of self-doubt after using the term in my writing, and was delighted to stumble upon Joshua Barretto's article, ["Writing Toy Software Is A Joy."](https://blog.jsbarretto.com/post/software-is-joy) In addition to a compilation of sample toy projects, Joshua provides his own reasons to tinker.
+
+> Software development needs more simple joy, and I've found that creating toy programs is a great way to remember why I started working with computers again.
+
+Reading that brought me back to elementary school, when I would spend hours daily making useless software in already-outdated [Visual Basic](https://en.wikipedia.org/wiki/Visual_Basic_(classic)) 6.0. My hobbies have little changed, but my outlook has. After formal computer science training and working with tech all day, every day at my job, I forgot *why* I code on my own time. I keep doing it because I always have, even though it lost some of its shine.
+
+I forgot just how important it is to play, especially where you work. In spite of hustle culture and commodification of the craft—I want to maintain the courage to experiment, and to earnestly share in the joy of learning.
+
+![](https://upload.wikimedia.org/wikipedia/en/thumb/0/0e/Visual_Basic_6.0_on_Windows_XP.png/500px-Visual_Basic_6.0_on_Windows_XP.png)
+
+## baby's first virtual machine
+
+Home sick after catching [mono](https://en.wikipedia.org/wiki/Infectious_mononucleosis) in November, I was itching to make something. I'd been watching Kaze Emanaur's videos about [Nintendo 64 decompilation analyses](https://youtu.be/Ot-lD1ABxqQ?si=FRFb10JBvm3qi5VW), and I'd always found Hundred Rabbits' tiny, personal computing–oriented [Uxn](https://100r.co/site/uxn.html) VM fascinating. I found Justin Meiners and Ryan Pendleton's article, ["Write your Own Virtual Machine,"](https://www.jmeiners.com/lc3-vm/) and embarked on my first virtual machine project.
+
+Meiners and Pendleton detail implementing the [Little Computer 3](https://en.wikipedia.org/wiki/Little_Computer_3) (LC\-3) architecture: a 16-bit, reduced instruction set devised for educational purposes by Yale N Patt. While their examples are written in C, I wrote my implementation in Rust—both to satisfy my personal preferences for safe code and to improve my skills in using Rust for big projects. It didn't take me long to implement the LC-3's relatively small specification, and I set the project down for a couple months.
+
+I came back to the project after largely recovering; I polished up my code and started writing my readme—where this article began. *It would sure be easier to get people to try this out if they didn't have to download anything.* Influenced by Joshua's writing, I decided, *why not keep toying?* I ended up:
+
+1. Restructuring the entire project to separate the VM's core logic from from its I/O;
+2. Writing [WebAssembly](https://webassembly.org/) bindings for I/O with [`wasm-bindgen`](https://wasm-bindgen.github.io/wasm-bindgen/), in addition to my native terminal bindings;
+3. And making a [Webpack](https://webpack.js.org/)-plus-TypeScript single-page application, automatically compiling and bundling my Rust core and I/O bindings with [`wasm-pack`](https://drager.github.io/wasm-pack/).
+
+For reasons I can't fully explain, it felt right to name this all after [*kladdkaka*](https://en.wikipedia.org/wiki/Kladdkaka)—a sticky, Swedish, chocolate cake. I took heavy inspiration from [online Swedish grocery store recipes](https://www.ica.se/recept/kladdig-kladdkaka-722982/) in my UI design.
+
+Try my virtual machine, kladdvara, [online](https://kladdvara.dandelion.computer). See its source and get its native terminal version [on GitHub](https://github.com/solanto/kladdvara).
+
+![A screenshot of kladdvara's pink, cake-decorated, web UI. A form allows picking or uploading a program for emulation. A text terminal shows a 2048 game being run.](../../assets/posts/kladdvara/screenshot.avif)
