@@ -35,12 +35,14 @@ const { Content } = await render(post)
 				{
 					tags ?
 						intersperse(
-							tags.map(tag => (
-								<a
-									href={`/tags/${slug(tag)}`}
-									set:html={smartypants(tag)}
-								/>
-							)),
+							tags
+								.sort()
+								.map(tag => (
+									<a
+										href={`/tags/${slug(tag)}`}
+										set:html={smartypants(tag)}
+									/>
+								)),
 							", "
 						)
 					:	null
