@@ -21,6 +21,7 @@ export const musicAudioDirs = Object.freeze({
 
 export default defineConfig({
 	output: "static",
+	site: "https://dandelion.computer",
 	build: {
 		inlineStylesheets: "never",
 		assets: "bundled"
