@@ -1,0 +1,77 @@
+---
+title: musesounds manager works on opensuse!
+date: 2026-06-25T21:08:48-04:00
+tags:
+    - music
+    - linux
+---
+
+# musesounds manager works on opensuse!
+
+It was a win when [MuseSounds Manager](https://handbook.musescore.org/sound-and-playback/musesounds#muse-sounds-manager-linux-only) released in December 2024 to give Linux users access to MuseScore 4's [new, advanced instruments](https://www.musehub.com/muse-sounds).
+
+![the MuseSounds Manager application, showing many free instrument packs available for download](../../assets/posts/musesounds-opensuse/manager.avif)
+
+Well—it was a win for some of us. MuseSounds Manager is packaged for Debian-based distributions ([Debian](https://www.debian.org/), [Ubuntu](https://ubuntu.com/), [Linux Mint](https://linuxmint.com/)) and Fedora–like, [RPM](https://rpm.org/)-based distributions ([Fedora](https://fedoraproject.org/), [Red Hat](https://www.redhat.com), [Bazzite](https://bazzite.gg/), [Nobara](https://nobaraproject.org/)). While [openSUSE](https://www.opensuse.org/) is also RPM-based, its overall differences to Fedora–like distros—despite using the same RPM package format—left many of us geckos without recourse.
+
+I figured out only today that it's indeed possible to get it working on openSUSE. Here's what I was missing.
+
+## installing
+
+Unlike most new software, which uses the [Wayland](https://wayland.freedesktop.org/) protocol to show graphical interfaces: MuseSounds Manager is built for the aging [X Window System](https://www.x.org/). The manager thus requires some library packages that are part of X, and RPM complains about them when you eventually attempt to install it. (I'm using RPM and Zypper directly here, but you can follow along with [YaST](https://en.opensuse.org/Portal:YaST), too!)
+
+```console
+$ sudo rpm -i Muse_Sounds_Manager_x64.rpm 
+[sudo] password for root: 
+error: Failed dependencies:
+	libICE is needed by muse-sounds-manager-2.2.1.953-1.x86_64
+	libSM is needed by muse-sounds-manager-2.2.1.953-1.x86_64
+	libX11 is needed by muse-sounds-manager-2.2.1.953-1.x86_64
+```
+
+The failures RPM reports aren't necessarily reflective of the libraries you have installed, though. RPM doesn't actually look through your [library files](https://en.opensuse.org/openSUSE:Shared_library_packaging_policy); it just queries the names of the requisite packages it expects against its database of installed packages. Asking [Zypper](https://en.opensuse.org/Portal:Zypper) whether you have the packages that provide these libraries, you may be pleasantly surprised to seem them marked as already installed (lines highlighted below), notated `i` or `i+`. For those which aren't installed, use—for example, for ICE—a command like `sudo zypper in libICE6`.
+
+```console {7,9,11}
+$ zypper se --provides -iC libICE libSM libX11
+Loading repository data...
+Reading installed packages...
+
+S  | Name              | Summary                                 | Type
+---+-------------------+-----------------------------------------+--------
+i+ | libICE6           | X11 Inter-Client Exchange Library       | package
+i+ | libICE6-32bit     | X11 Inter-Client Exchange Library       | package
+i+ | libSM6            | X Session Management library            | package
+i+ | libSM6-32bit      | X Session Management library            | package
+i+ | libX11-6          | Core X11 protocol client library        | package
+i+ | libX11-6-32bit    | Core X11 protocol client library        | package
+i+ | libX11-data       | Shared data for the Core X11 protocol-> | package
+i+ | libX11-devel      | Development files for the Core X11 pr-> | package
+i+ | libX11-xcb1       | XCB X11 protocol client library         | package
+i+ | libX11-xcb1-32bit | XCB X11 protocol client library         | package
+```
+
+Querying Zypper also reveals why RPM might not have recognized the libraries; in my case, the package names end with an additional `6` or `-6`. Were MuseSounds Manager released with specific support for openSUSE, this wouldn't have been a problem, as its dependencies would have listed the proper names. As long as the libraries are installed, it's safe to use the [`nodeps` flag](https://rpm.org/docs/latest/man/rpm.8#:~:text=are%3A-,%2D%2Dnodeps) to ignore RPM's warnings that we might break the package.
+
+```bash
+sudo rpm -i Muse_Sounds_Manager_x64.rpm --nodeps
+```
+## running
+
+You should hopefully have MuseSounds Manager installed and ready to open by now.
+
+The manager is smart to enforce [transport-layer security](https://en.wikipedia.org/wiki/Transport_Layer_Security) (TLS), which prevents you from unknowingly downloading malicious data from a server falsely claiming to be MuseScore's. It does this by using the database of [certificates](https://en.wikipedia.org/wiki/Public_key_certificate#TLS/SSL_server_certificate) your system maintains—which MuseSounds Manager may not be able to find when it looks where it expects Fedora would keep it. Within the manager: this causes downloads to fail, producing logs (accessible by hitting the *Settings* buttom and selecting *Open* by *View application logs*) like the following:
+
+```
+ERROR|Muse.Client.Linux.Interop.MuseHubLogging|Download failed with code: 77: Problem with the SSL CA cert (path? access rights?)
+```
+
+As documented [on MuseScore's issue tracker](https://github.com/RPCS3/rpcs3/issues/15558#issue-2279593195): a link to openSUSE's certificates, where Fedora's would usually be, solves this problem.
+
+```bash
+sudo mkdir -p /etc/ssl/certs
+sudo ln -s /var/lib/ca-certificates/ca-bundle.pem /etc/ssl/certs/ca-certificates.crt
+```
+
+## happy notating!
+
+![MuseScore open to the beginning of a file titled "lucky southern:" a piano-and-bass, jazz score; in the Mixer panel, a mouse pointer selects MuseSounds > Muse > Muse Keys > Grand Piano](../../assets/posts/musesounds-opensuse/musescore.avif)
