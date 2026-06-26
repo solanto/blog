@@ -792,6 +792,16 @@ main {
 				display: block;
 				padding: calc(1em + 1ex);
 			}
+
+			.highlighted {
+				font-weight: bold;
+
+				background-color: color-mix(in oklab, var(--color__alt--light), transparent 60%);
+
+				>span {
+					color: white !important;
+				}
+			}
 		}
 	}
 

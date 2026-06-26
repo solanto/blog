@@ -24,6 +24,7 @@ import remarkToc from "remark-toc"
 import type { Plugin } from "unified"
 import rehypeShiki from "@shikijs/rehype"
 import {
+	transformerMetaHighlight,
 	transformerNotationDiff,
 	transformerNotationHighlight
 } from "@shikijs/transformers"
@@ -44,6 +45,7 @@ import { type Handler, toHast } from "mdast-util-to-hast"
 // import remarkOembed from "remark-oembed"
 import remarkEmbedder from "@remark-embedder/core"
 import transformerOembed from "@remark-embedder/transformer-oembed"
+import shellSession from "@robot-inventor/shell-session-syntax"
 
 declare global {
 	interface Window {
@@ -431,7 +433,7 @@ const codeToHast: Handler = (state, node) => {
 	result = {
 		type: "element",
 		tagName: "pre",
-		properties: { className: ["hi"] },
+		properties: { className: [] },
 		children: [result]
 	}
 
@@ -496,7 +498,7 @@ const markdown: AstroUserConfig["markdown"] = {
 		// processor => remarkEmbedder(processor, { transformers: [transformerOembed] })
 	],
 	rehypePlugins: [
-		// rehypeShiki,
+		rehypeShiki,
 		rehypeMathml,
 		rehypeSvgo,
 		rehypeWidont,
@@ -506,16 +508,20 @@ const markdown: AstroUserConfig["markdown"] = {
 	remarkRehype: {
 		handlers: {
 			abbrDefinition: () => undefined,
-			code: codeToHast
+			// code: codeToHast
 			// image: imageToHast
 		}
 	},
 	shikiConfig: {
-		langs: [{ ...JSON.parse(abcGrammarJSON), name: "abc" }],
+		langs: [{ ...JSON.parse(abcGrammarJSON), name: "abc" }, shellSession],
+		langAlias: {
+			console: "shellsession"
+		},
 		theme: "ayu-dark",
 		transformers: [
 			// transformerNotationDiff(),
-			// transformerNotationHighlight()
+			// transformerNotationHighlight(),
+			transformerMetaHighlight()
 		]
 	}
 }
