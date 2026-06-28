@@ -1,6 +1,7 @@
 ---
 title: musesounds manager works on opensuse!
 date: 2026-06-25T21:08:48-04:00
+updated: 2026-06-28T12:19:14-04:00
 tags:
     - music
     - linux
@@ -12,13 +13,13 @@ It was a win when [MuseSounds Manager](https://handbook.musescore.org/sound-and-
 
 ![the MuseSounds Manager application, showing many free instrument packs available for download](../../../public/assets/posts/musesounds-opensuse/manager.avif)
 
-Well—it was a win for some of us. MuseSounds Manager is packaged for Debian-based distributions ([Debian](https://www.debian.org/), [Ubuntu](https://ubuntu.com/), [Linux Mint](https://linuxmint.com/)) and Fedora–like, [RPM](https://rpm.org/)-based distributions ([Fedora](https://fedoraproject.org/), [Red Hat](https://www.redhat.com), [Bazzite](https://bazzite.gg/), [Nobara](https://nobaraproject.org/)). While [openSUSE](https://www.opensuse.org/) is also RPM-based, its overall differences to Fedora–like distros—despite using the same RPM package format—left many of us geckos without recourse.
+Well—it was a win for some of us. MuseSounds Manager is packaged for Debian-based distributions ([Debian](https://www.debian.org/), [Ubuntu](https://ubuntu.com/), [Linux Mint](https://linuxmint.com/)) and Fedora-like, [RPM](https://rpm.org/)-based distributions ([Fedora](https://fedoraproject.org/), [Red Hat](https://www.redhat.com), [Bazzite](https://bazzite.gg/), [Nobara](https://nobaraproject.org/)). While [openSUSE](https://www.opensuse.org/) is also RPM-based, its overall differences to Fedora-like distros—despite using the same RPM package format—left many of us geckos without recourse.
 
 I figured out only today that it's indeed possible to get it working on openSUSE. Here's what I was missing.
 
 ## installing
 
-Unlike most new software, which uses the [Wayland](https://wayland.freedesktop.org/) protocol to show graphical interfaces: MuseSounds Manager is built for the aging [X Window System](https://www.x.org/). The manager thus requires some library packages that are part of X, and RPM complains about them when you eventually attempt to install it. (I'm using RPM and Zypper directly here, but you can follow along with [YaST](https://en.opensuse.org/Portal:YaST), too!)
+Unlike most new software, which uses the [Wayland](https://wayland.freedesktop.org/) protocol to show graphical interfaces: MuseSounds Manager is built for the aging [X Window System](https://www.x.org/). The manager thus requires some library packages that are part of X, and the RPM installer complains about them when you eventually attempt to install it. (I'm using RPM and Zypper directly here, but you can follow along with [YaST](https://en.opensuse.org/Portal:YaST), too!)
 
 ```console
 $ sudo rpm -i Muse_Sounds_Manager_x64.rpm 
@@ -29,7 +30,7 @@ error: Failed dependencies:
 	libX11 is needed by muse-sounds-manager-2.2.1.953-1.x86_64
 ```
 
-The failures RPM reports aren't necessarily reflective of the libraries you have installed, though. RPM doesn't actually look through your [library files](https://en.opensuse.org/openSUSE:Shared_library_packaging_policy); it just queries the names of the requisite packages it expects against its database of installed packages. Asking [Zypper](https://en.opensuse.org/Portal:Zypper) whether you have the packages that provide these libraries, you may be pleasantly surprised to seem them marked as already installed (lines highlighted below), notated `i` or `i+`. For those which aren't installed, use—for example, for ICE—a command like `sudo zypper in libICE6`.
+The failures RPM reports aren't necessarily reflective of the libraries you have installed, though. RPM doesn't actually look through your [library files](https://en.opensuse.org/openSUSE:Shared_library_packaging_policy); it just queries the names of the requisite packages it expects against its database of installed packages. Asking [Zypper](https://en.opensuse.org/Portal:Zypper) whether you have the packages that provide these libraries, you may be pleasantly surprised to see them marked as already installed (lines highlighted below), notated `i` or `i+`. For those which aren't installed, use—for example, for ICE—a command like `sudo zypper in libICE6`.
 
 ```console {7,9,11}
 $ zypper se --provides -iC libICE libSM libX11
