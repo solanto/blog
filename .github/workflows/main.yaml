@@ -18,6 +18,13 @@ jobs:
         with:
           submodules: true
 
+      - name: 🖼️ restore cached images
+        id: cache-images-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: .astro
+          key: Images-${{ runner.os }}
+
       - name: ➕ update package lists
         run: sudo apt-get update
 
@@ -55,3 +62,21 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: 🖼️ check if image cache exists for current branch
+        id: actions-cache-list
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: echo "RESULT=$(gh actions-cache list --branch ${{ github.ref }} --key Images-)" >> $GITHUB_OUTPUT
+
+      - name: 🖼️ clear existing image cache
+        if: ${{ steps.actions-cache-list.outputs.RESULT != '' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh actions-cache delete ${{ steps.cache-images-restore.outputs.cache-primary-key }} --branch ${{ github.ref }} --confirm
+
+      - name: 🖼️ cache images
+        uses: actions/cache/save@v4
+        with:
+          path: .astro
+          key: ${{ steps.cache-images-restore.outputs.cache-primary-key }}

@@ -1,0 +1,16 @@
+name: reheat image cache
+
+on:
+  schedule:
+    - cron: 0 6 * * 6
+
+jobs:
+  hit-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🖼️ restore cached images
+        id: cache-images-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: .astro
+          key: Images-${{ runner.os }}
