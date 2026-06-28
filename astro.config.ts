@@ -1,4 +1,4 @@
-import { defineConfig } from "astro/config"
+import { defineConfig, passthroughImageService } from "astro/config"
 // import { imageService } from "@unpic/astro/service"
 import markdown from "./lib/remark.config"
 import musicAudio from "./lib/music-audio"
@@ -49,7 +49,8 @@ export default defineConfig({
 	},
 	compressHTML: true,
 	image: {
-		domains: ["flickr.com", "live.staticflickr.com", "wikimedia.org"]
+		domains: ["flickr.com", "live.staticflickr.com", "wikimedia.org"],
+		service: passthroughImageService()
 	},
 	integrations: [
 		// elmstronaut()
