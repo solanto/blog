@@ -19,6 +19,27 @@ export const musicAudioDirs = Object.freeze({
 	outputDir
 })
 
+const _fetch = globalThis.fetch;
+globalThis.fetch = function (input, init) {
+	let hostname
+	try {
+		const url = input instanceof Request ? input.url
+			: input instanceof URL ? input.href
+				: String(input)
+
+		hostname = new URL(url).hostname
+	} catch { return _fetch(input, init) }
+
+	const headers = new Headers(input instanceof Request ? input.headers : undefined)
+	headers.set('User-Agent', 'dandelion.computer/1.0 (https://dandelion.computer; person@dandelion.computer)')
+
+	if (init?.headers) new Headers(init.headers).forEach((v, k) => headers.set(k, v))
+
+	init = { ...init, headers }
+
+	return _fetch(input, init)
+}
+
 export default defineConfig({
 	output: "static",
 	site: "https://dandelion.computer",
