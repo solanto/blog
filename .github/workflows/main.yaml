@@ -67,7 +67,9 @@ jobs:
         id: actions-cache-list
         env:
           GH_TOKEN: ${{ github.token }}
-        run: echo "RESULT=$(gh actions-cache list --branch ${{ github.ref }} --key Images-)" >> $GITHUB_OUTPUT
+        run: |
+          gh extension install actions/gh-actions-cache
+          echo "RESULT=$(gh actions-cache list --branch refs/heads/main --key Images-)" >> $GITHUB_OUTPUT
 
       - name: 🖼️ clear existing image cache
         if: ${{ steps.actions-cache-list.outputs.RESULT != '' }}
