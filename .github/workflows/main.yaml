@@ -11,6 +11,9 @@ env:
 
 jobs:
   deploy:
+    permissions:
+      actions: write
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: ⤵️ check out code
