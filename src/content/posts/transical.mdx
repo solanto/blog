@@ -1,0 +1,118 @@
+---
+title: transical
+date: 2026-07-07T19:00:45-04:00
+tags:
+  - transit
+  - python
+---
+
+# transical
+
+As a frequent Baltimore-Washington [commuter](https://humantransit.org/2013/07/slippery-word-watch-commute.html), I am *always* scouring timetables. And still, I miss my trains.
+
+Where it even exists, regional rail in the US is overwhelmingly designed around rush-hour commutes for work; nevertheless, I insist on taking the reverse-commute train to DC on a Wednesday evening to see friends, or back up to Baltimore on a Sunday morning when schedules are sparse. And so I open the [Maryland Area Rail Commuter](https://en.wikipedia.org/wiki/MARC_Train) (MARC)’s timetable, open my calendar app, and flit between the two as I copy down train times, numbers, and departure stops—one by one and prone to error. Or I don't, and I risk getting stranded.
+
+![the blue, headlit front of MARC locomotive 4912—a sleek, electric HHP-8—approaching its platform next to another MARC train on a center track; the sky is a pale blue, and the setting sun's orange rays peek through the gap between the trains](https://live.staticflickr.com/65535/54460887563_4079617015.jpg)
+
+I'd known for a while that—amid all the proprietary-format grifts bigger tech companies like to peddle to government agencies to "solve" data management—transit invariably uses the [open](https://en.wikipedia.org/wiki/Open_file_format) [General Transit Feed Specification](https://gtfs.org/) (GTFS) format to pass schedule information between computer programs. Meanwhile, all calendar applications are compatible with the similarly-open [iCalendar](https://en.wikipedia.org/wiki/ICalendar) format, used to import and export events. Between one open format and another, we have an opportunity to do some magic.
+
+![A demonstration of how opening the ".ics" file attached to a haircut confirmation email from Old Market Barbers automatically imports the event into my calendar.](../../../public/assets/posts/transical/icalendar-demo.avif "When you get a calendar invitation in your email, it comes in in iCalendar (`.ics`) format!")
+
+I took that opportunity and made a tool that converts GTFS schedules into iCalendar events.
+
+As I wrote it, though, I could see why I hadn't found tools in the wild to do this. While humans don't have much trouble interpreting them day-to-day, transit services can work out to be incredibly complex on paper. Overlapping service patterns on shared routes... services backtracking, doubling over themselves, and making special stops some days but not others... GTFS has to be able to represent any and all services—including the weird ones. You can't just ask, "When do trains run from Baltimore to Washington?," but instead, in sequence:
+
+1. What service patterns exist?
+2. Which of those patterns first visit Baltimore, and *then* visit Washington?
+3. When are trips made on those service patterns?
+4. When does each of those trips depart and arrive?
+
+It's a whole slog of queries across five tables within a single GTFS feed. And that's not even to mention filtering results to journeys that matter most to you.
+
+I was able to make my tool handle that pipeline for most simple journeys on simple schedules (though, to date, it may have trouble with weird service patterns and bonus services added as schedule exceptions), and it can even represent services that repeat across the week as repeating calendar events, and give those events alarms. Better still, it can filter journeys.
+
+## a conversion tool, and more
+
+My tool, [transical](https://github.com/solanto/transical), can take in a local path or online URL to any GTFS file, and it'll walk you through picking a route, origin, and destination for which to generate calendar events.
+
+```console
+$ transical https://feeds.mta.maryland.gov/gtfs/marc 2026-07-01/2026-08-01 output.ics
+No route was provided. Use arrow keys to select a route from the menu below.
+🔄› 11704 · MARC · BRUNSWICK - WASHINGTON
+    11705 · MARC · PENN - WASHINGTON
+    11706 · MARC · CAMDEN - WASHINGTON                                                                                                                                         
+Selecting route. Hit </> to search.
+```
+
+My commutes don't necessarily span my transit service's entire schedule—I might only want trains on Tuesdays, or outside working hours. Rather than add dozens of optional flags, I ended up giving transical a tiny [query language](https://en.wikipedia.org/wiki/Query_language) to specify the days and times you care about.
+
+```bash
+transical --filter 'day is tuesday or time is not 9:00/17:00' https://…
+```
+
+From there, you can directly import transical's `.ics` outputs in desktop applications like [Google Calendar](https://support.google.com/calendar/answer/37118?hl=en\&co=GENIE.Platform%3DDesktop), [Apple Calendar](https://support.apple.com/guide/calendar/import-or-export-calendars-icl1023/mac), [Evolution](https://help.gnome.org/evolution/import-single-files.html), or [Thunderbird](https://support.mozilla.org/en-US/kb/thunderbird-import). Or, like in the example earlier, you can email files to yourself to import on a mobile device.
+
+## design rationale & some glances under the hood
+
+### user experience at the terminal
+
+The [command-line interface](https://en.wikipedia.org/wiki/Command-line_interface) (CLI) relies on a conversation metaphor: the computer listens for your command, you say what you want, and it responds when necessary. When a program is meant for humans—as opposed to other programs—I expect it to accommodate at least some of my human, conversational tendencies. If I say something that *feels* unambiguous, I *feel* like the computer should be able to figure out what I meant. This in mind, I put a lot of effort into making transical smart when it comes to interpreting user input.
+
+For example: with the way that GTFS feeds are structured, routes and stops are identified by unique identifiers made for computers—not for people.
+
+|   stop_id | stop_name                     |  stop_lat |   stop_lon |
+| --------: | ----------------------------- | --------: | ---------: |
+| **11980** | PENN STATION MARC sb          | 39.307198 | -76.615715 |
+| **11958** | UNION STATION MARC Washington | 38.899036 | -77.006795 |
+
+I don't expect users (especially not ones like me) to remember these IDs. If transical is called without `--route` (`-r`) and `--termini` (`-t`) flags, it knows to enter interactive mode, letting you pick among the options available within the GTFS feed you provided. transical then lets you know what noninteractive command you can use next time.
+
+```bash
+✨ Next time, you can run:
+transical https://feeds.mta.maryland.gov/gtfs/marc 2026-07-01/2026-08-01 output.ics \
+    -r 11705 -t 11980/11958
+```
+
+Similarly: filter expressions—detailed later—can be written in shorthand. This was inspried by good experiences using Cisco's [Internetworking Operating System](https://en.wikipedia.org/wiki/Cisco_IOS) (IOS), whose commands can be abbreviated to the fewest unique characters that identify them.
+
+```
+day is tuesday or time is not 09:00/17:00
+d   is tu      or t    is not  9:00/17:00
+```
+
+To implement this throughout the program, I went as far as making up my own `PrefixSet` and `PrefixDict` datatypes that determine and interpret all unambiguous prefixes as valid keys for a given term. These datatypes not only accept `tu` as a valid key for `tuesday`, but also properly reject `we` as ambiguous among `wednesday`, `weekday`, and `weekend`.
+
+Finally, I wanted all of transical's usage to be well documented, in the places a CLI user might expect. In addition to providing a `--help` option: transical provides standard, *nix [manual pages](https://en.wikipedia.org/wiki/Man_page) (manpages)—providing users amenities for detailed, offline documentation by running `man transical`. Transparently, I hated the markup language, [groff](https://en.wikipedia.org/wiki/Groff_(software)), that manpages are written in. To avoid it, I made a custom document processing pipeline, using [Pandoc](https://pandoc.org/) to convert human-friendly [Markdown](https://en.wikipedia.org/wiki/Markdown) into groff manpages when the program is built—with the added benefit of letting developers read the docs directly from transical's repository.
+
+### prettifying station names
+
+You may notice that, beyond IDs, `stop_name`s and the like in GTFS feeds don't necessarily match common names. Compare `PENN STATION MARC sb` to "Baltimore Penn Station;" the caps, `MARC` qualifier, and `sb` *southbound* indicator are unusual for what you might put in your calendar. This bothered me, so I sought help exactly where people gather to document location info: the [OpenStreetMap](https://www.openstreetmap.org) project. While OpenStreetMap itself doesn't have an API to [reverse-geocode](https://en.wikipedia.org/wiki/Reverse_geocoding) locations into names, the hiking app company [komoot](https://www.komoot.com/) provides an API, [photon](https://photon.komoot.io/), for free barring overuse. Unless otherwise instructed, transical uses photon to standardize the way stops appear in your calendar.
+
+> I'm a big fan of giving back to the community in return for private use of public projects; komoot's API hosting greatly benefits downstream projects like transical.
+
+### filter expressions
+
+I'm very proud of this feature. transical has its own, [domain-specific](https://en.wikipedia.org/wiki/Domain-specific_language) [query language](https://en.wikipedia.org/wiki/Query_language), so you can write expressions that tell the program which days and times you need events for.
+
+These filter expressions compile ([transpile](https://en.wikipedia.org/wiki/Source-to-source_compiler)) down to Python code just like the rest of the program—allowing transical to evaluate filters across many GTFS datapoints at little cost of time. I used [an off-the-shelf library](https://github.com/pyparsing/pyparsing) to handle turning the raw text into more structured trees of clauses (basically, putting parentheses in the right places). This out of the way, I could have my fun spending time on the side of the compiler that generates Python expressions out of that tree—a little, recursive machine that walks along the tree, breaking it down into little bits easily representable in Python.
+
+```python
+# original
+day is tuesday or time is not 9:00/17:00
+
+# intermediate
+(day (is) tuesday) or (time (is not) 9:00/17:00)
+
+# python
+lambda day, time: (day in {'tuesday'}) or not (32400 <= time <= 61200)
+```
+
+## try it out!
+
+Use [pipx](https://pipx.pypa.io/) to install transical from the [Python Package Index](https://pypi.org/) (PyPI).
+
+```bash
+pipx install transical
+```
+
+Learn more about transical, how to use it, and how it was made at [its repository, online](https://github.com/solanto/transical). Find GTFS feeds for your favorite transit services online, too; everyone from [MTA](https://www.mta.maryland.gov/developer-resources), to [WMATA](https://developer.wmata.com/), to [SL](https://www.trafiklab.se/api/our-apis/sl/) publishes their feeds for big apps like [Transit](https://transitapp.com), little apps like transical, and everything in between.
