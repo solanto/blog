@@ -805,6 +805,13 @@ main {
 		}
 	}
 
+	.table-container {
+		margin-left: calc(-1 * var(--margin));
+		padding-left: var(--margin);
+		overflow-x: scroll;
+		width: calc(var(--content-width) + var(--margin));
+	}
+
 	figure.paper {
 		position: relative;
 		left: calc(var(--margin) / -1);

@@ -11,6 +11,7 @@ import smartypants from "smartypants"
 import type { Post } from "../../content.config"
 import Photo from "../../components/Photo.astro"
 import CodeBlock from "../../components/CodeBlock.astro"
+import Table from "../../components/Table.astro"
 
 export const getStaticPaths: GetStaticPaths = async () =>
 	(await getCollection("posts")).map(post => ({
@@ -52,6 +53,6 @@ const { Content } = await render(post)
 		</details>
 	</aside>
 	<main>
-		<Content components={{ img: Photo, pre: CodeBlock }} />
+		<Content components={{ img: Photo, pre: CodeBlock, table: Table }} />
 	</main>
 </Page>
