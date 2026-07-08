@@ -1,7 +1,7 @@
 ---
 title: "tooling my commute with transical"
 date: 2026-07-07T19:00:45-04:00
-updated: 2026-07-07T20:03:35-04:00
+updated: 2026-07-07T20:30:45-04:00
 tags:
   - transit
   - python
@@ -74,11 +74,11 @@ transical https://feeds.mta.maryland.gov/gtfs/marc 2026-07-01/2026-08-01 output.
     -r 11705 -t 11980/11958
 ```
 
-Similarly: filter expressions—detailed later—can be written in shorthand. This was inspried by good experiences using Cisco's [Internetworking Operating System](https://en.wikipedia.org/wiki/Cisco_IOS) (IOS), whose commands can be abbreviated to the fewest unique characters that identify them.
+Similarly: filter expressions—detailed later—can be written in shorthand. This was inspired by good experiences using Cisco's [Internetworking Operating System](https://en.wikipedia.org/wiki/Cisco_IOS) (IOS), whose commands can be abbreviated to the fewest unique, starting characters that identify them.
 
 ```
-day is tuesday or time is not 09:00/17:00
-d   is tu      or t    is not  9:00/17:00
+day is tuesday or time is not 9:00/17:00
+d   is tu      or t    is not 9:00/17:00
 ```
 
 To implement this throughout the program, I went as far as making up my own `PrefixSet` and `PrefixDict` datatypes that determine and interpret all unambiguous prefixes as valid keys for a given term. These datatypes not only accept `tu` as a valid key for `tuesday`, but also properly reject `we` as ambiguous among `wednesday`, `weekday`, and `weekend`.
