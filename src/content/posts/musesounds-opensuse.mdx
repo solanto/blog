@@ -1,7 +1,7 @@
 ---
 title: musesounds manager works on opensuse!
 date: 2026-06-25T21:08:48-04:00
-updated: 2026-06-28T12:45:34-04:00
+updated: 2026-07-30T00:49:54-04:00
 tags:
     - music
     - linux
@@ -60,7 +60,7 @@ sudo rpm -i Muse_Sounds_Manager_x64.rpm --nodeps
 
 You should hopefully have MuseSounds Manager installed and ready to open by now.
 
-The manager is smart to enforce [transport-layer security](https://en.wikipedia.org/wiki/Transport_Layer_Security) (TLS), which prevents you from unknowingly downloading malicious data from a server falsely claiming to be MuseScore's. It does this by using the database of [certificates](https://en.wikipedia.org/wiki/Public_key_certificate#TLS/SSL_server_certificate) your system maintains—which MuseSounds Manager may not be able to find when it looks where it expects Fedora would keep it. Within the manager: this causes downloads to fail, producing logs (accessible by hitting the *Settings* buttom and selecting *Open* by *View application logs*) like the following:
+The manager is smart to enforce [transport-layer security](https://en.wikipedia.org/wiki/Transport_Layer_Security) (TLS), which prevents you from unknowingly downloading malicious data from a server falsely claiming to be MuseScore's. It does this by using the database of [certificates](https://en.wikipedia.org/wiki/Public_key_certificate#TLS/SSL_server_certificate) your system maintains—which MuseSounds Manager may not be able to find when it looks where it expects Fedora would keep it. Within the manager: this causes downloads to fail, producing logs (accessible by hitting the *Settings* button and selecting *Open* by *View application logs*) like the following:
 
 ```
 ERROR|Muse.Client.Linux.Interop.MuseHubLogging|Download failed with code: 77: Problem with the SSL CA cert (path? access rights?)
