@@ -1,0 +1,17 @@
+---
+const pathname = encodeURIComponent(Astro.props.pathname)
+---
+
+<script define:vars={{ pathname }}>
+	const r = new XMLHttpRequest()
+	
+	r.addEventListener("load", function() {
+		const { count_unique } = JSON.parse(this.responseText)
+        document.querySelector("#visitor-count").innerText = `${count_unique} visitor${count_unique == 1 ? "" : "s"} viewed this page`
+    })
+
+    r.open("GET", `https://stats.dandelion.computer/counter/${pathname}.json`)
+    r.send()
+</script>
+
+<a id="visitor-count" href={`https://stats.dandelion.computer?filter=${pathname}`}>see how many visitors viewed this page</a>

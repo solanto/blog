@@ -5,6 +5,7 @@ import wordmark from "../assets/wordmark.svg"
 import { getCollection } from "astro:content"
 import { DateTime } from "luxon"
 import Time from "../components/Time.astro"
+import VisitorCount from "../components/VisitorCount.astro"
 
 interface Props {
 	title?: string
@@ -51,6 +52,10 @@ const now = DateTime.now()
 			title="RSS feed"
 			href="/feed.xml"
 		/>
+		<script data-goatcounter="https://stats.dandelion.computer/count" async src="//gc.zgo.at/count.js"></script>
+		<noscript>
+			<img src={`https://stats.dandelion.computer/count?p=${Astro.url.pathname}`}>
+		</noscript>
 	</head>
 
 	<body>
@@ -119,6 +124,9 @@ const now = DateTime.now()
 			<section>
 				<a href="/feed.xml">RSS feed</a>
 			</section>
+			<section>
+				<VisitorCount pathname={Astro.url.pathname} />. <a href="/tracking">how does this site track me?</a>
+			<section>
 			<section>
 				<small
 					>built with <a href="https://astro.build">astro</a>
