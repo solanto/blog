@@ -49,7 +49,7 @@ export default defineConfig({
 	},
 	compressHTML: true,
 	image: {
-		domains: ["flickr.com", "live.staticflickr.com", "upload.wikimedia.org", "web.archive.org"],
+		domains: ["flickr.com", "live.staticflickr.com", "upload.wikimedia.org", "web.archive.org", "raw.githubusercontent.com"],
 		service: passthroughImageService()
 	},
 	integrations: [
