@@ -1,5 +1,5 @@
 ---
-const pathname = encodeURIComponent(Astro.props.pathname)
+const pathname = Astro.props.pathname
 ---
 
 <script define:vars={{ pathname }}>
@@ -10,8 +10,8 @@ const pathname = encodeURIComponent(Astro.props.pathname)
         document.querySelector("#visitor-count").innerText = `${count_unique} visitor${count_unique == 1 ? "" : "s"} viewed this page`
     })
 
-    r.open("GET", `https://stats.dandelion.computer/counter/${pathname}.json`)
+    r.open("GET", `https://stats.dandelion.computer/counter/${encodeURIComponent(pathname)}.json`)
     r.send()
 </script>
 
-<a id="visitor-count" href={`https://stats.dandelion.computer?filter=${pathname}`}>see how many visitors viewed this page</a>
+<a id="visitor-count" href={`https://stats.dandelion.computer?filter=${encodeURIComponent(`${pathname} at:start at:end`)}`}>see how many visitors viewed this page</a>
