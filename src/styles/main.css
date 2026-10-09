@@ -1048,6 +1048,20 @@ svg.music {
 	}
 }
 
+.http-warning {
+	width: 100vw;
+	left: calc((100vw - var(--content-width)) / -2);
+	background-color: darkred;
+	color: white;
+	padding-block: 0.5ex;
+	position: relative;
+	padding-inline: var(--content-left);
+	
+	* {
+		text-decoration-color: white;
+	}
+}
+
 @media (prefers-contrast: no-preference) and (prefers-reduced-motion: no-preference) {
 	:root {
 		background-image: var(--paper-texture);

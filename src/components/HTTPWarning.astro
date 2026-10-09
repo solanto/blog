@@ -1,0 +1,7 @@
+---
+// this is not used from within the site; it is a model for the element the site's DNS hosting provider injects into plain-HTTP responses 
+---
+
+<aside class="http-warning" role="status" class="top-banner info">
+  <span>Your connection is insecure. If your device supports it, please <a href={new URL(Astro.url.pathname, import.meta.env.SITE).href}>use HTTPS</a>.</span>
+</aside>
