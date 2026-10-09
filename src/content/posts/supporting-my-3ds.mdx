@@ -1,0 +1,126 @@
+---
+title: "supporting my 3DS, despite my hosting provider"
+date: 2026-10-08T20:31:29-04:00
+tags:
+    - web dev
+    - 3ds
+---
+
+# supporting my 3DS, despite my hosting provider
+
+Thanks to a good friend's generosity, I recently got my hands on a ["New" Nintendo 3DS XL](https://en.wikipedia.org/wiki/New_Nintendo_3DS) (which I, of course, immediately [softmodded](https://en.wikipedia.org/wiki/Softmod#Nintendo_2DS/3DS)—more on that soon!).
+
+Naturally: I connected it to my 2.4 GHz network, opened its web browser, and typed in `dandelion.computer`.
+
+![The 3DS's browser, attempting to load a webpage, reporting: "Error code 032-1035 / Could not display page."](../../assets/posts/supporting-my-3ds/error.avif "A reenactment of the error I initially encountered, using `europa.eu` as an example, as I'd fixed the issue by the time of writing.")
+
+Like many websites nowadays, this website only supported the [HTTP](https://en.wikipedia.org/wiki/HTTP)-over-[TLS](https://en.wikipedia.org/wiki/Transport_Layer_Security) ([HTTPS](https://en.wikipedia.org/wiki/HTTPS)) protocol. From a security standpoint, this is ideal; enforcing TLS for HTTP requests helps guarantee that requested data isn't [adulterated](https://en.wikipedia.org/wiki/Man-in-the-middle_attack) or [eavesdropped on](https://en.wikipedia.org/wiki/Sniffing_attack).
+
+The 3DS's TLS implementation, though, is far behind standard. [Every last cipher suite it supports](#appendix-the-cipher-suites-my-3dssupports)—every algorithm it can call upon to encrypt messages—is [marked "discouraged" by the Internet Assigned Numbers Authority](https://www.iana.org/assignments/tls-parameters#tls-parameters-4) (IANA). Nowadays, fewer and fewer servers support these cipher suites, as they're known to be insecure. So when the 3DS requests a website, and the site's server replies "sure, but only if we use HTTPS," the two often have no cipher suites in common and have to give up the connection. This is the reality for many of the remaining devices using TLS 1.2 and below (as [TLS 1.3 deprecated all these ciphers](https://www.rfc-editor.org/info/rfc9846/#name-major-differences-from-tls-)), now making up something like [three percent of human requests](https://radar.cloudflare.com/explorer?dataSet=http&groupBy=tls_version&filters=botClass%253DLIKELY_HUMAN&dt=2025-10-08_2026-10-08) on the web.
+
+But I like old devices. They typically have lower price points (though the 3DS is a bad example at $250, used), they're [useful in using less power](https://100r.co/site/tools_ecosystem.html), and they continually remind us of software trickery we've used to get more out of limited hardware. And in the same way I aim to include the roughly [three percent of people who have low vision](https://pmc.ncbi.nlm.nih.gov/articles/PMC5820628/) with accessible design here on my blog, it might be nice to include people who have no choice but to use old devices. Unlike in banking or social networking, the contents of this website don't *need* to be 100% secure for those who accept the privacy risk.
+
+I was reminded of this fact while considering joining the [geekring](https://geekring.net/)—a [webring](https://en.wikipedia.org/wiki/Webring) collecting niche personal websites. Its webmaster, DusteD, [advises](https://geekring.net/#:~:text=HTTP%20%2F%20HTTPS):
+
+> This website is intended to work on older computers, some of which cannot support the HTTPS protocol, either due to new algorithms or CPU/RAM limitations. Therefore the default behavior is HTTP. But for the crypto-happy among you, there is full HTTPS support, just HTTP to HTTPS in all links if you desire. If you submit a website with HTTPS as the protocol, it will be included as HTTPS. However, for the sake of the millions of Commodore 64 users out there, eager to surf the web, consider whether what you're publishing actually needs to be encrypted or not.
+
+## downgrading, whether vercel likes it or not
+
+The first layer users reach when accessing this website is [Cloudflare](https://www.cloudflare.com/), which resolves the domain name `dandelion.computer` to an [IP address](https://en.wikipedia.org/wiki/IP_address) of a server hosting the website's content. Getting Cloudflare to allow plain HTTP traffic is fairly easy; just disable ["Always Use HTTPS."](https://developers.cloudflare.com/ssl/edge-certificates/additional-options/always-use-https/)
+
+This, however, did not stop `http://dandelion.computer` from redirecting to `https://dandelion.computer`. As it turns out: my underlying hosting provider, [Vercel](https://vercel.com), [redirects all HTTP requests to HTTPS](https://vercel.com/docs/cdn-security/encryption#:~:text=HTTPS%20redirection%20is%20an%20industry%20standard%20and%20can%27t%20be%20disabled).
+
+Not wanting to totally overhaul my hosting (yet), I added a [worker](https://developers.cloudflare.com/workers/)—a small script that runs for each request—to my domain on Cloudflare. This script intercepts plain-HTTP requests; relays them to Vercel through HTTPS; and serves them back to users, stripped of Vercel's HTTPS enforcement measures. (Did I mention this is unsafe?)
+
+```javascript
+export default {
+  async fetch(request) {
+    const url = new URL(request.url)
+
+    if (url.protocol === "http:") {
+      url.protocol = "https:"
+      
+      const response = await fetch(url.toString(), {
+        method: request.method,
+        headers: request.headers
+      })
+
+      const plaintextResponse = new Response(response.body, response)
+      plaintextResponse.headers.delete("Strict-Transport-Security")
+      plaintextResponse.headers.delete("Content-Security-Policy")
+      
+      return plaintextResponse
+    }
+
+    return fetch(request)
+  }
+}
+```
+
+## conclusion
+
+If you can avoid it: please, don't use `dandelion.computer`—or any website—over plain HTTP. But when HTTP is the only option, this site will still work.
+
+And finally, I can load my own website on my 3DS.
+
+![The 3DS's browser, showing my article, "yes, you can stream to homepods from your linux PC." The article is unstyled, but it does include images that are part of the content.](../../assets/posts/supporting-my-3ds/success.avif "The 3DS's built-in browser.")
+
+![Another 3DS browser, showing my article, "tooling my commute with transical." The article is unstyled.](../../assets/posts/supporting-my-3ds/success-netsurf.avif "[Coderman64's 3DS port](https://github.com/coderman64/netsurf-3ds) of [NetSurf](https://www.netsurf-browser.org/).")
+
+I'll soon have to figure out offering larger but more widely compatible image formats alongside the [AVIF](https://en.wikipedia.org/wiki/AVIF) images I tend to use on this site. I may also like to show a warning to those using plain HTTP. Always more to do!
+
+## appendix: the cipher suites my 3DS supports
+
+I gathered this list using [Jeff Hodges](https://www.darkishgreen.com/)'s [*How's My SSL?*](https://www.howsmyssl.com/) tool—which I'm glad still supports my 3DS's cipher suites. I could otherwise find zero documentation of this.
+
+- `TLS_DHE_RSA_WITH_AES_256_GCM_SHA384`
+- `TLS_DHE_RSA_WITH_AES_256_CBC_SHA256`
+- `TLS_DHE_RSA_WITH_AES_256_CBC_SHA`
+- `TLS_RSA_WITH_AES_256_GCM_SHA384`
+- `TLS_RSA_WITH_AES_256_CBC_SHA256`
+- `TLS_RSA_WITH_AES_256_CBC_SHA`
+- `TLS_DHE_RSA_WITH_AES_128_GCM_SHA256`
+- `TLS_DHE_RSA_WITH_AES_128_CBC_SHA256`
+- `TLS_DHE_RSA_WITH_AES_128_CBC_SHA`
+- `TLS_RSA_WITH_AES_128_GCM_SHA256`
+- `TLS_RSA_WITH_AES_128_CBC_SHA256`
+- `TLS_RSA_WITH_AES_128_CBC_SHA`
+- `TLS_DHE_RSA_WITH_3DES_EDE_CBC_SHA`
+- `TLS_RSA_WITH_3DES_EDE_CBC_SHA`
+- `TLS_RSA_WITH_RC4_128_SHA`
+- `TLS_RSA_WITH_RC4_128_MD5`
+
+## bonus: how i processed those screenshots
+
+Screenshots taken via [Rosalina](https://wiki.hacks.guide/wiki/3DS:Luma3DS/Rosalina) come in pairs of [bitmap](https://en.wikipedia.org/wiki/BMP_file_format) files, named by a shared timestamp and `_top.bmp` and `_bot.bmp` suffixes. I wrote a little [fish](https://fishshell.com/) function as a shortcut to stack and compress screenshots with [ImageMagick](https://imagemagick.org/).
+
+```fish
+function ds-magick
+    argparse h/help s/stack -- $argv or return
+    
+    if set -q _flag_help
+        echo 'Reencode a screenshot bitmap as a lossy AVIF.'
+        echo 'ds-magick [TOP_OR_BOTTOM_BITMAP]'
+        echo
+        echo 'Stack top and bottom screenshot bitmaps, from the same directory, and reencode them as a lossy AVIF.'
+        echo 'ds-magick [TOP_OR_BOTTOM_BITMAP] --stack'
+        echo 'ds-magick [TOP_OR_BOTTOM_BITMAP] -s'
+        
+        return
+    end
+    
+    set options -quality 70 -depth 8 -define heic:speed=0 -define heic:chroma=444
+    
+    if set -q _flag_stack
+        set prefix (string match -r '^(.+)_(?:top|bot)\.bmp$' $argv[1])[2]
+    
+        magick $prefix"_top.bmp" $prefix"_bot.bmp" -background none -gravity center -append +repage $options $prefix".avif"
+    else   
+        set prefix (string match -r '^(.+)\.bmp$' $argv[1])[2]
+        
+        magick $prefix".bmp" $options $prefix".avif"
+    end
+end
+```
+
+.
