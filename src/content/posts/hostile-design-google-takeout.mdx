@@ -1,0 +1,53 @@
+---
+title: hostile design on google takeout
+date: 2026-11-06T13:19:51-05:00
+tags:
+    - design
+    - google
+---
+
+# hostile design on google takeout
+
+Google has *technically* provided its consumer cloud users a way to port their data out of Google's ecosystem [since 2011](https://dataliberation.blogspot.com/2011/06/data-liberation-front-delivers-google.html). 
+
+And Stockholm's public transit system *technically* provides benches in all its stations. But a bench is only as good as its design allows.
+
+Having gone from enthused, to neutral, to contemptuous about Google's privacy practices surrounding its consumer cloud products—especially given [news](https://www.androidauthority.com/google-personal-intelligence-ads-opt-out-3729942/) that the company would start using my photo library to target me in advertising—I've finally begun my farewell to the ecosystem. I'm now migrating my data from services like Google Maps and Google Photos to open-source alternatives like [Dawarich](https://dawarich.app/) and [Immich](https://immich.app/), which I can host on servers in my own home. The only supported way to do this is through [Google Takeout](https://en.wikipedia.org/wiki/Google_Takeout): a service positioned to permit portability of the user data Google stores.
+
+![Screenshot. 2 products / data backup to a download link / Your total request size is 227.76 GB. This request has been divided into 7 files. / Part 1: 3.58 GB / Part 2: 41.69 GB…](../../../public/assets/posts/hostile-design-google-takeout/takeout.avif)
+
+Takeout started with the right intentions. The [Data Liberation Front](https://web.archive.org/web/20140123000034/http://www.dataliberation.org/) formed within Google in  with a clear purpose.
+
+> Users should be able to control the data they store in any of Google's products.  Our team's goal is to make it easier to move data in and out.
+
+The Front has since seemed to have dissolved, as it site and [social media presence](https://web.archive.org/web/20150314043851/https://twitter.com/dataliberation) would disappear over the years. Takeout still stands, helping Google check the boxes it needs to for consumer rights mandates like the [GDPR](https://europa.eu/youreurope/business/governance-and-sustainability/digital-and-data-compliance/data-protection-gdpr/index_en.htm)'s "right to data portability" ([article 20](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX%3A02016R0679-20160504#:~:text=Article%2020,portability)) and the [CCPA](https://oag.ca.gov/privacy/ccpa)'s "right to access" ([section 110](https://cppa.ca.gov/regulations/pdf/ccpa_statute.pdf#page=6)). 
+
+Don't get me wrong—Takeout accomplishes a difficult task. [Hacker News users](https://news.ycombinator.com/item?id=40701346) point to the fact that Takeout's team, both within and beyond the Front, has managed to aggregate data from disparate business units across its company. But whether or not it's intentional, it stands that the user experience feels like it's punishing you for wanting your data.
+
+## why is this so painful?
+
+Take my example. First, I pick my poison: do I want many small files, or a couple large files? This is smart on Takeout's part; I get a say in balancing convenience at download time against trust in my network connection to not fail downloading midway. I pay my ISP big bucks to get fast internet, and I've shelled out for my own router instead of my ISP's freebie router, so I'm fairly sure large files will suit me. I wait patiently—on the order of days—for Takeout to assemble my export. I go to download my data, and things quickly go awry.
+
+Something makes my first download fail—some network error that might have come from my home network, my ISP's network, or Google's network.
+
+Fine. I switch to a more advanced download manager than my browser ([aria2](https://aria2.github.io/) instead of Firefox, in my instance). But Takeout's "Data backup to a download link" doesn't readily hand over any such download link for my download manager to use; rather than linking to your files, the page's "Download" buttons use JavaScript code to ask Google's servers for them.
+
+Weird… I snoop internet fora to find that I can hit "Download," then right-click on the download in my browser to copy the real URL, cancel the download, and paste the link into my download manager.
+
+More download failures—I have to install some browser extension (thank you, [kairi](https://github.com/kairi003/Get-cookies.txt-LOCALLY/)) to manually export my browser's cookies for my download manager to use, as Google's servers demand to reauthenticate downloads. Worse yet, I come to find that my session cookies are cycled something like every thirty minutes, meaning I have to re-export my cookies for every download. I understand that this is sensitive data, but this is overkill. Google's other services don't act like this; Google Calendar, for example, exposes your entire calendar to the public internet through a [secret address](https://support.google.com/calendar/answer/37648?hl=en#zippy=%2Csecret-address), long-term. This is "secure enough" by the fact that the address is practically unguessable and can't be brute-forced without triggering Google's bot detection. Deleted after a week, Takeout downloads wouldn't even live long enough to accumulate much risk in a system like this.
+
+By the time I've figured all this out, Takeout *just now* tells me that download attempts are capped at five.
+
+![A character played by Meryl Streep, incredulous, saying "Now, a warning?"](../../../public/assets/posts/hostile-design-google-takeout/now-a-warning.avif "Meryl Streep as Madeline Ashton in [[[Death Becomes Her]], 1992](https://en.wikipedia.org/wiki/Death_Becomes_Her)")
+
+Five! With the innumerable things that can go wrong when downloading so much data over unreliable networks—not even to mention the fact that Google obviously sets aside relatively little infrastructure for Takeout with how slow download speeds are—I get only five tries. Though Takeout only invalidated one of my seven archive files, I really had no choice but to start over. I can't use my data with a chunk taken out of it.
+
+## retrospective
+
+I get it. Google Takeout is designed to give me my data at low cost to Google, and to prevent someone from abusing the system by redistributing download links to my sensitive data.
+
+Yet, I'm reminded of the hostile architecture unfortunately common in the cities I've known—even the ones I still love. Stockholm's public transit is marvelous, but I've come across leaning benches in old metro stations and new commuter rail stations alike.
+
+![A pair of smooth-finish wooden planks side-by-side, each about ten inches tall, mounted at waist height at a slight upward angle against a wall.](https://safereddit.com/img/6x54mqhfsrm11.jpg "A leaning bench in Stockholm's Odenplan commuter rail station. Photo by [t3ddan](https://www.reddit.com/user/t3ddan/) on Reddit (via [Nachtalb/redlib](https://github.com/Nachtalb/redlib) at [safereddit.com](https://safereddit.com/r/europe/comments/9giwwv/infuriating_these_benches_in_a_new_modern_metro/); see on [Internet Archive](https://web.archive.org/web/20250104133421/https://www.reddit.com/r/europe/comments/9giwwv/infuriating_these_benches_in_a_new_modern_metro/)).")
+
+Leaning benches are meant to fulfill some of the functions of a standard bench, but they've been designed around a set of goals that's not exactly aligned with their users' needs. At best, they save space; at worst, they prevent homeless people from "abusing" the benches by resting for "too long." A strange design can indeed take these goals into account, but such a design prevents *all of us* from resting in the way a bench promises—while doing nothing to solve the core issues at hand. It's barely a band-aid; why not spend design resources elsewhere and, maybe, put yourself in the user's shoes when addressing those constraints?
