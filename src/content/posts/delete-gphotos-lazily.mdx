@@ -1,0 +1,55 @@
+---
+title: delete google photos the lazy way
+date: 2026-11-12T16:10:34-05:00
+tags:
+    - google
+    - self-hosting
+---
+
+# delete google photos the lazy way
+
+Many DIYers are turning to [Immich](https://immich.app/) as they leave Google services behind. There's [some semblance of a way](hostile-design-google-takeout) to download your media from Google Photos—but what about deleting your lifetime's-worth of photos when you're done?
+
+You could sit there at the Google Photos website, selecting all the photos that load at a time and hitting delete, forever. You could make it easier on yourself by running [`mrishab/google-photos-delete-tool`](https://github.com/mrishab/google-photos-delete-tool) in your browser, but it'll still take forever. Luckily: if you've managed to get Immich up and running, there's a good chance you already have infrastructure you can use to put it all on autopilot. You can turn off that laptop, walk away, and sleep tight knowing your photos are disappearing for good.
+
+## get a pod to do it!
+
+I set up my Immich server with [Kubernetes](https://kubernetes.io/) (K8s), so I spun up a temporary pod in my cluster where the deletion process could happen in the background. I'm sure you could do this with Podman or Docker on their own, if that's what you used to set up Immich; if you use them, you'll be more familiar with what their manifests should look like than I do. Here's the manifest I used in K8s, more or less.
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: gphotos-deleter
+spec:
+  restartPolicy: Never
+  containers:
+    - name: chromium
+      image: lscr.io/linuxserver/chromium:latest
+      env:
+        - { name: PUID, value: "1000" }
+        - { name: PGID, value: "1000" }
+        - { name: TZ, value: "America/New_York" }
+        - { name: CUSTOM_USER, value: "me" }
+        - { name: PASSWORD, value: "change-me-to-a-better-password" }
+        - { name: CHROME_CLI, value: "https://photos.google.com/?hl=en" }
+      ports:
+        - containerPort: 3000 # http endpoint
+        - containerPort: 3001 # https endpoint
+      resources:
+        limits:
+          memory: 3Gi
+      volumeMounts:
+        - { name: shm, mountPath: /dev/shm }
+  volumes:
+    - name: shm
+      emptyDir:
+        medium: Memory
+        sizeLimit: 1Gi
+```
+
+This'll spin up a pod running Chromium and a [Selkies](https://docs.selkies.io) VNC server. Forward a local port on your machine to the pod's VNC port with `kubectl port-forward pod/gphotos-chromium 3001:3001` (or `3000:3000`) and log in to Selkies's web interface at `https://localhost:3001` (or `http://localhost:3000`) to interact with the pod's Chromium browser.
+
+Then, as per [`mrishab/google-photos-delete-tool`'s docs](https://github.com/mrishab/google-photos-delete-tool#readme): sign in to Google Photos, [prevent Chromium from loading images](https://github.com/mrishab/google-photos-delete-tool#readme:~:text=Disable%20image%20loading%20for%20Google%20Photos%20on%20your%20browser%20to%20avoid%20high%20cpu%2Cram%20and%20network%20usage) (no need to waste computing resources loading images you're not trying to see), copy the [deleter script](https://github.com/mrishab/google-photos-delete-tool/blob/master/delete_photos.js), and paste it into [Chromium's developer console](https://github.com/mrishab/google-photos-delete-tool#readme:~:text=Open%20Developer%20Tools%2E%20You%20can%20do%20so%20by%20following%20either%20of%20the%20three%20options). Of course, consult `mrishab`'s docs for more detail on using the script.
+
+Once you see that the script is running—selecting and deleting batches of photos for you, on loop—feel free to close the VNC viewer. When you get to check back up on it and find that it's done, delete the pod with `kubectl delete pod gphotos-deleter`. Finally, you're free.
